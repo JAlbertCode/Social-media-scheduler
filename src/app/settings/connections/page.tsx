@@ -1,8 +1,19 @@
-import { ConnectButton } from '@/components/ConnectButton';
-import { getServerSession } from 'next-auth';
+'use client';
 
-export default async function ConnectionsPage() {
-  const session = await getServerSession();
+import { ConnectButton } from '@/components/ConnectButton';
+import { useSession, signIn } from 'next-auth/react';
+
+export default function ConnectionsPage() {
+  const { data: session } = useSession();
+
+  const handleConnect = (service: string) => {
+    if (service === 'Google Drive') {
+      signIn('google');
+    } else {
+      console.log(`Connecting to ${service}`);
+      // Will implement other service connections later
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-8">
@@ -15,21 +26,20 @@ export default async function ConnectionsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ConnectButton 
               serviceName="Twitter" 
-              onClick={() => {}} 
+              onClick={() => handleConnect('Twitter')} 
             />
             <ConnectButton 
               serviceName="Instagram" 
-              onClick={() => {}} 
+              onClick={() => handleConnect('Instagram')} 
             />
             <ConnectButton 
               serviceName="LinkedIn" 
-              onClick={() => {}} 
+              onClick={() => handleConnect('LinkedIn')} 
             />
             <ConnectButton 
               serviceName="TikTok" 
-              onClick={() => {}} 
+              onClick={() => handleConnect('TikTok')} 
             />
-            {/* Add other social media platforms */}
           </div>
         </section>
 
@@ -39,12 +49,12 @@ export default async function ConnectionsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ConnectButton 
               serviceName="Google Drive" 
-              onClick={() => {}} 
+              onClick={() => handleConnect('Google Drive')} 
               connected={!!session}
             />
             <ConnectButton 
               serviceName="Notion" 
-              onClick={() => {}} 
+              onClick={() => handleConnect('Notion')} 
             />
           </div>
         </section>
