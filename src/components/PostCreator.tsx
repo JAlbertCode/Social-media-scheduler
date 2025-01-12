@@ -1,17 +1,24 @@
-import React, { useState, useCallback } from 'react';
+'use client';
 
-// Platform Types and Requirements
+import React, { useState, useCallback, useRef } from 'react';
+
+// Types
 export type PlatformType = 'TWITTER' | 'INSTAGRAM' | 'TIKTOK' | 'LINKEDIN' | 'YOUTUBE_SHORTS';
 export type ContentType = 'feed' | 'story' | 'reels';
 
-interface PlatformLimits {
+interface MediaFile {
+  file: File;
+  preview: string;
+  type: 'image' | 'video';
+}
+
+// Platform Requirements
+const PLATFORM_LIMITS: Record<PlatformType, {
   maxLength: number;
   maxHashtags?: number;
   maxMentions?: number;
   maxUrls?: number;
-}
-
-const PLATFORM_LIMITS: Record<PlatformType, PlatformLimits> = {
+}> = {
   TWITTER: {
     maxLength: 280,
     maxHashtags: 30,
@@ -43,6 +50,7 @@ interface PostCreatorProps {
     mentions: string[];
     urls: string[];
     threads?: string[];
+    media?: File[];
   }) => void;
 }
 
@@ -56,7 +64,10 @@ export const PostCreator: React.FC<PostCreatorProps> = ({
   const [mentions, setMentions] = useState<string[]>([]);
   const [urls, setUrls] = useState<string[]>([]);
   const [threads, setThreads] = useState<string[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get the most restrictive limits across all selected platforms
   const getStrictestLimits = useCallback(() => {
@@ -96,62 +107,70 @@ export const PostCreator: React.FC<PostCreatorProps> = ({
     setUrls(text.match(urlRegex) || []);
   }, []);
 
-  // Suggest thread breakdown for long content
-  const suggestThreads = useCallback((text: string) => {
-    const limits = getStrictestLimits();
-    if (text.length <= limits.maxLength) {
-      setThreads([]);
-      return;
-    }
-
-    // Split on sentence boundaries while respecting length limits
-    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-    const newThreads: string[] = [];
-    let currentThread = '';
-
-    sentences.forEach((sentence) => {
-      if ((currentThread + sentence).length <= limits.maxLength) {
-        currentThread += sentence;
-      } else {
-        if (currentThread) newThreads.push(currentThread.trim());
-        currentThread = sentence;
+  // Handle file selection
+  const handleFiles = useCallback((files: FileList) => {
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+        const preview = URL.createObjectURL(file);
+        setMediaFiles(prev => [...prev, {
+          file,
+          preview,
+          type: file.type.startsWith('image/') ? 'image' : 'video'
+        }]);
       }
     });
+  }, []);
 
-    if (currentThread) newThreads.push(currentThread.trim());
-    setThreads(newThreads);
-  }, [getStrictestLimits]);
+  // Handle drag and drop
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
 
-  // Validate content against platform limits
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFiles(e.dataTransfer.files);
+  }, [handleFiles]);
+
+  // Content validation and thread suggestion
   const validateContent = useCallback((text: string) => {
     const limits = getStrictestLimits();
     const errors: Record<string, string> = {};
 
-    if (text.length > limits.maxLength && threads.length === 0) {
-      errors.length = `Content exceeds maximum length of ${limits.maxLength} characters`;
+    if (text.length > limits.maxLength) {
+      const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+      let currentThread = '';
+      const newThreads: string[] = [];
+
+      sentences.forEach((sentence) => {
+        if ((currentThread + sentence).length <= limits.maxLength) {
+          currentThread += sentence;
+        } else {
+          if (currentThread) newThreads.push(currentThread.trim());
+          currentThread = sentence;
+        }
+      });
+
+      if (currentThread) newThreads.push(currentThread.trim());
+      setThreads(newThreads);
+
+      if (newThreads.length === 0) {
+        errors.length = `Content exceeds maximum length of ${limits.maxLength} characters`;
+      }
+    } else {
+      setThreads([]);
     }
 
     parseContent(text);
-    suggestThreads(text);
-
-    const hashtagCount = (text.match(/#/g) || []).length;
-    if (limits.maxHashtags && hashtagCount > limits.maxHashtags) {
-      errors.hashtags = `Too many hashtags (max: ${limits.maxHashtags})`;
-    }
-
-    const mentionCount = (text.match(/@/g) || []).length;
-    if (limits.maxMentions && mentionCount > limits.maxMentions) {
-      errors.mentions = `Too many mentions (max: ${limits.maxMentions})`;
-    }
-
-    const urlCount = (text.match(/(https?:\/\/[^\s]+)/g) || []).length;
-    if (limits.maxUrls && urlCount > limits.maxUrls) {
-      errors.urls = `Too many URLs (max: ${limits.maxUrls})`;
-    }
-
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [getStrictestLimits, parseContent, suggestThreads, threads.length]);
+  }, [getStrictestLimits, parseContent]);
 
   // Handle content changes
   const handleContentChange = useCallback((text: string) => {
@@ -167,10 +186,11 @@ export const PostCreator: React.FC<PostCreatorProps> = ({
         hashtags,
         mentions,
         urls,
-        threads: threads.length > 0 ? threads : undefined
+        threads: threads.length > 0 ? threads : undefined,
+        media: mediaFiles.map(({ file }) => file)
       });
     }
-  }, [content, hashtags, mentions, urls, threads, validateContent, onPostCreate]);
+  }, [content, hashtags, mentions, urls, threads, mediaFiles, validateContent, onPostCreate]);
 
   return (
     <div className="space-y-4 p-4 border rounded-lg">
@@ -194,6 +214,96 @@ export const PostCreator: React.FC<PostCreatorProps> = ({
           {error}
         </div>
       ))}
+
+      {/* Media Upload */}
+      <div
+        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+          ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept="image/*,video/*"
+          onChange={(e) => e.target.files && handleFiles(e.target.files)}
+          multiple
+        />
+        <div className="space-y-4">
+          <svg
+            className="mx-auto h-12 w-12 text-gray-400"
+            stroke="currentColor"
+            fill="none"
+            viewBox="0 0 48 48"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 14v20c0 4.418 3.582 8 8 8h16c4.418 0 8-3.582 8-8V14m-16-4v16m-8-8h16"
+            />
+          </svg>
+          <div className="text-sm text-gray-600">
+            <p className="font-medium">
+              {isDragging ? 'Drop files here...' : 'Drop files or click to upload'}
+            </p>
+            <p className="mt-1">Images (PNG, JPG, GIF) or Videos (MP4, MOV)</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Media Preview */}
+      {mediaFiles.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Selected Media</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {mediaFiles.map((file, index) => (
+              <div key={index} className="relative group">
+                <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-100">
+                  {file.type === 'image' ? (
+                    <img
+                      src={file.preview}
+                      alt={`Preview ${index + 1}`}
+                      className="object-cover"
+                    />
+                  ) : (
+                    <video
+                      src={file.preview}
+                      className="object-cover"
+                      controls
+                    />
+                  )}
+                  <button
+                    onClick={() => {
+                      URL.revokeObjectURL(file.preview);
+                      setMediaFiles(files => files.filter((_, i) => i !== index));
+                    }}
+                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Thread Preview */}
       {threads.length > 0 && (
