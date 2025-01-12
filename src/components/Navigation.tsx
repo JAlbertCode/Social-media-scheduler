@@ -19,6 +19,12 @@ export function Navigation() {
                 Dashboard
               </Link>
               <Link 
+                href="/create"
+                className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-700"
+              >
+                Create Post
+              </Link>
+              <Link 
                 href="/settings/connections"
                 className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-700"
               >
