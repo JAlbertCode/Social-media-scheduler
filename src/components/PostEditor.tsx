@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { MediaUploader } from './MediaUploader'
-import { PreviewContainer } from './PreviewContainer'
 import { PlatformType } from './PostCreator'
 
 interface PostEditorProps {
@@ -12,102 +11,53 @@ interface PostEditorProps {
 }
 
 export function PostEditor({ 
-  onSave, 
-  initialContent = '', 
-  initialPlatforms = ['Twitter'] 
+  onSave,
+  initialPlatforms = ['Twitter']
 }: PostEditorProps) {
-  const [content, setContent] = useState(initialContent)
   const [media, setMedia] = useState<Array<{ type: 'image' | 'video'; preview: string }>>([])
-  const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformType[]>(initialPlatforms)
-  const [showPreview, setShowPreview] = useState(false)
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformType>(initialPlatforms[0])
 
-  const handleSave = () => {
-    onSave(content, media, selectedPlatforms)
-  }
-
-  const togglePlatform = (platform: PlatformType) => {
-    setSelectedPlatforms(current =>
-      current.includes(platform)
-        ? current.filter(p => p !== platform)
-        : [...current, platform]
-    )
+  const handleMediaSelect = (files: Array<{ type: 'image' | 'video'; preview: string }>) => {
+    setMedia(files)
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Platforms
-          </label>
-          <div className="flex gap-2">
-            {(['Twitter', 'LinkedIn', 'Instagram'] as PlatformType[]).map(platform => (
+    <div className="space-y-4">
+      <MediaUploader
+        platform={selectedPlatform}
+        onMediaSelect={handleMediaSelect}
+      />
+
+      {media.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {media.map((file, index) => (
+            <div key={index} className="relative group aspect-square">
+              {file.type === 'image' ? (
+                <img
+                  src={file.preview}
+                  alt={`Preview ${index + 1}`}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              ) : (
+                <video
+                  src={file.preview}
+                  className="w-full h-full object-cover rounded-lg"
+                  controls
+                />
+              )}
               <button
-                key={platform}
-                onClick={() => togglePlatform(platform)}
-                className={`
-                  px-4 py-2 rounded
-                  ${selectedPlatforms.includes(platform)
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 hover:bg-gray-300'
-                  }
-                `}
+                onClick={() => {
+                  const newMedia = [...media]
+                  newMedia.splice(index, 1)
+                  setMedia(newMedia)
+                }}
+                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                {platform}
+                ×
               </button>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Content
-          </label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full h-32 rounded-lg border-gray-300 shadow-sm"
-            placeholder="What would you like to share?"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Media
-          </label>
-          <MediaUploader
-            platform={selectedPlatforms[0]}
-            onMediaSelect={(files) => 
-              setMedia(files.map(f => ({
-                type: f.type === 'image' ? 'image' : 'video',
-                preview: f.preview
-              })))
-            }
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setShowPreview(!showPreview)}
-          className="px-4 py-2 text-blue-500 hover:bg-blue-50 rounded"
-        >
-          {showPreview ? 'Hide Preview' : 'Show Preview'}
-        </button>
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Schedule Post
-        </button>
-      </div>
-
-      {showPreview && (
-        <PreviewContainer
-          platforms={selectedPlatforms}
-          content={content}
-          media={media}
-        />
       )}
     </div>
   )
