@@ -1,5 +1,6 @@
 import { PlatformType } from '@/components/PostCreator'
 import { TwitterPlatform } from './twitter'
+import { LinkedInPlatform } from './linkedin'
 import { SocialPlatform } from './types'
 
 export class PlatformFactory {
@@ -11,7 +12,9 @@ export class PlatformFactory {
         case 'Twitter':
           this.instances.set(type, new TwitterPlatform())
           break
-        // Add other platforms here as they're implemented
+        case 'LinkedIn':
+          this.instances.set(type, new LinkedInPlatform())
+          break
         default:
           throw new Error(`Platform ${type} not implemented`)
       }
@@ -31,5 +34,9 @@ export class PlatformFactory {
   static getAuthUrl(type: PlatformType): string {
     const platform = this.getPlatform(type)
     return platform.getAuthUrl()
+  }
+
+  static isImplemented(type: PlatformType): boolean {
+    return ['Twitter', 'LinkedIn'].includes(type)
   }
 }
