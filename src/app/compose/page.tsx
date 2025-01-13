@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { PostEditor } from '../../components/PostEditor'
 import { PreviewContainer } from '../../components/PreviewContainer'
 import { HashtagSuggestions } from '../../components/HashtagSuggestions'
+import { MentionSuggestions } from '../../components/MentionSuggestions'
 import { ScheduledPost } from '../../types/calendar'
 import { PlatformType } from '../../components/PostCreator'
 import { getUserTimezone } from '../../utils/timezone'
+import { countMentions } from '../../utils/mentionSuggestions'
 
-// Platform-specific constraints
 const PLATFORM_LIMITS = {
   Twitter: {
     characterLimit: 280,
@@ -29,16 +30,26 @@ export default function ComposePage() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformType[]>(['Twitter'])
   const [media, setMedia] = useState<Array<{ type: 'image' | 'video'; preview: string }>>([])
   const [error, setError] = useState<string | null>(null)
+  const [cursorPosition, setCursorPosition] = useState<{ top: number; left: number } | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const validateContent = (text: string, platforms: PlatformType[]): string | null => {
     for (const platform of platforms) {
+      // Character limit validation
       const limit = PLATFORM_LIMITS[platform].characterLimit
       if (text.length > limit) {
         return `Content exceeds ${platform} limit of ${limit} characters`
       }
       
+      // Media validation
       if (media.length > PLATFORM_LIMITS[platform].mediaLimit) {
         return `Too many media items for ${platform}. Maximum is ${PLATFORM_LIMITS[platform].mediaLimit}`
+      }
+
+      // Mentions validation
+      const mentionsCount = countMentions(text, platform)
+      if (!mentionsCount.valid) {
+        return mentionsCount.message
       }
     }
     return null
@@ -48,6 +59,19 @@ export default function ComposePage() {
     setContent(newContent)
     const validationError = validateContent(newContent, selectedPlatforms)
     setError(validationError)
+
+    // Update cursor position for mention suggestions
+    if (textareaRef.current) {
+      const { selectionStart } = textareaRef.current
+      const lines = newContent.slice(0, selectionStart).split('\n')
+      const lineHeight = 24 // Approximate line height in pixels
+      const rect = textareaRef.current.getBoundingClientRect()
+      
+      setCursorPosition({
+        top: rect.top + lines.length * lineHeight,
+        left: rect.left + (lines[lines.length - 1].length * 8) // Approximate character width
+      })
+    }
   }
 
   const handlePlatformToggle = (platform: PlatformType) => {
@@ -71,6 +95,15 @@ export default function ComposePage() {
     handleContentChange(newContent)
   }
 
+  const handleMentionSelect = (mention: string) => {
+    // Replace the current word with the mention
+    const words = content.split(/\s+/)
+    words[words.length - 1] = mention
+    const newContent = words.join(' ') + ' '
+    handleContentChange(newContent)
+    setCursorPosition(null)
+  }
+
   const handleSave = async () => {
     const validationError = validateContent(content, selectedPlatforms)
     if (validationError) {
@@ -85,8 +118,14 @@ export default function ComposePage() {
     }
 
     console.log('Saving post:', post)
-    // Here we would send to backend
   }
+
+  // Clean up cursor position when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setCursorPosition(null)
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
 
   return (
     <div className="max-w-7xl mx-auto p-4">
@@ -117,7 +156,7 @@ export default function ComposePage() {
                 </div>
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Content
                   <span className="text-sm text-gray-500 ml-2">
@@ -125,11 +164,21 @@ export default function ComposePage() {
                   </span>
                 </label>
                 <textarea
+                  ref={textareaRef}
                   value={content}
                   onChange={(e) => handleContentChange(e.target.value)}
                   className="w-full min-h-[200px] p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   placeholder="What would you like to share?"
                 />
+                {cursorPosition && content.split(/\s+/).pop()?.startsWith('@') && (
+                  <div className="absolute z-10" style={cursorPosition}>
+                    <MentionSuggestions
+                      content={content}
+                      platform={selectedPlatforms[0]}
+                      onMentionSelect={handleMentionSelect}
+                    />
+                  </div>
+                )}
               </div>
 
               <div>

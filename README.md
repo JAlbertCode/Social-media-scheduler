@@ -27,7 +27,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [ ] Automatic thread suggestion for Twitter and Threads
 - [x] Platform-specific feature support:
   - [x] Hashtag suggestions
-  - [ ] Mention functionality
+  - [x] Mention functionality
   - [ ] Link preview handling
 ### Scheduling System
 - [x] Calendar interface for content scheduling
