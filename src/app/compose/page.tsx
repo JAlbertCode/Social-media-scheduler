@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { PostEditor } from '../../components/PostEditor'
 import { PreviewContainer } from '../../components/PreviewContainer'
+import { HashtagSuggestions } from '../../components/HashtagSuggestions'
 import { ScheduledPost } from '../../types/calendar'
 import { PlatformType } from '../../components/PostCreator'
 import { getUserTimezone } from '../../utils/timezone'
@@ -59,6 +60,15 @@ export default function ComposePage() {
       setError(validationError)
       return newPlatforms
     })
+  }
+
+  const handleHashtagSelect = (hashtag: string) => {
+    let newContent = content
+    if (!content.endsWith(' ') && content.length > 0) {
+      newContent += ' '
+    }
+    newContent += hashtag + ' '
+    handleContentChange(newContent)
   }
 
   const handleSave = async () => {
@@ -132,6 +142,19 @@ export default function ComposePage() {
                   initialPlatforms={selectedPlatforms}
                 />
               </div>
+
+              {selectedPlatforms.map(platform => (
+                <div key={platform} className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    {platform} Hashtag Suggestions
+                  </h3>
+                  <HashtagSuggestions
+                    content={content}
+                    platform={platform}
+                    onHashtagSelect={handleHashtagSelect}
+                  />
+                </div>
+              ))}
 
               {error && (
                 <div className="p-3 bg-red-50 text-red-700 rounded-lg">

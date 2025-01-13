@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { PlatformType } from './PostCreator'
-import { ScheduledPost } from '../types/calendar'
 
-interface QueuedPost extends Omit<ScheduledPost, 'scheduledTime'> {
+interface QueuedPost {
+  id: string
+  content: string
+  platforms: PlatformType[]
   queuePosition: number
 }
 
@@ -40,82 +42,111 @@ export function QueueManager({
     onReorder(updatedItems)
   }
 
-  const handleAutoSchedule = (post: QueuedPost) => {
-    // Get next available time slot based on platform recommendations
+  const handleScheduleNow = (post: QueuedPost) => {
+    // Schedule for the next available time slot
     const nextSlot = new Date()
-    nextSlot.setHours(nextSlot.getHours() + 1)
+    nextSlot.setMinutes(nextSlot.getMinutes() + 15) // 15 minutes from now
     onSchedule(post, nextSlot)
   }
 
+  const handleScheduleLater = (post: QueuedPost) => {
+    // Schedule for tomorrow at 9 AM
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(9, 0, 0, 0)
+    onSchedule(post, tomorrow)
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold mb-4">Post Queue - {platform}</h3>
-      
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="queue">
-          {(provided) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="space-y-2"
-            >
-              {posts.map((post, index) => (
-                <Draggable
-                  key={post.id}
-                  draggableId={post.id}
-                  index={index}
-                >
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className="bg-gray-50 p-3 rounded-lg"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm truncate">{post.content}</p>
-                          <div className="flex gap-1 mt-1">
-                            {post.platforms.map(p => (
-                              <span
-                                key={p}
-                                className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs"
-                              >
-                                {p}
-                              </span>
-                            ))}
-                          </div>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId="queue">
+        {(provided, snapshot) => (
+          <div
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+            className={`space-y-2 ${snapshot.isDraggingOver ? 'bg-blue-50' : ''}`}
+          >
+            {posts.map((post, index) => (
+              <Draggable
+                key={post.id}
+                draggableId={post.id}
+                index={index}
+              >
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    className={`
+                      bg-white border rounded-lg shadow-sm
+                      ${snapshot.isDragging ? 'shadow-md' : ''}
+                      transition-shadow duration-200
+                    `}
+                  >
+                    <div className="p-4">
+                      {/* Drag Handle */}
+                      <div 
+                        {...provided.dragHandleProps}
+                        className="flex items-center justify-between mb-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-400">☰</span>
+                          <span className="text-sm text-gray-500">
+                            Position {index + 1}
+                          </span>
                         </div>
-                        <div className="flex gap-2 ml-4">
-                          <button
-                            onClick={() => handleAutoSchedule(post)}
-                            className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                          >
-                            Schedule
-                          </button>
-                          <button
-                            onClick={() => onRemove(post.id)}
-                            className="px-2 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
-                          >
-                            Remove
-                          </button>
+                        <div className="flex items-center gap-2">
+                          {post.platforms.map((p) => (
+                            <span
+                              key={p}
+                              className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700"
+                            >
+                              {p}
+                            </span>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
 
-      {posts.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          No posts in queue. Drag unscheduled posts here to add them to the queue.
-        </div>
-      )}
-    </div>
+                      {/* Content */}
+                      <p className="text-sm text-gray-700 mb-4">
+                        {post.content.length > 100
+                          ? `${post.content.substring(0, 100)}...`
+                          : post.content
+                        }
+                      </p>
+
+                      {/* Actions */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleScheduleNow(post)}
+                            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                          >
+                            Schedule Now
+                          </button>
+                          <button
+                            onClick={() => handleScheduleLater(post)}
+                            className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                          >
+                            Schedule Later
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => onRemove(post.id)}
+                          className="p-1 text-red-500 hover:text-red-600"
+                        >
+                          <span className="sr-only">Remove</span>
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   )
 }
