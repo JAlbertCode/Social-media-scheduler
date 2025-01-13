@@ -44,7 +44,7 @@ const platformGuidelines: Record<PlatformType, PlatformRecommendation> = {
     ],
     minimumGap: 6
   }
-}
+} as const
 
 export function getRecommendedTimes(
   platform: PlatformType,
@@ -102,9 +102,9 @@ export function analyzePostingPattern(posts: Date[], platform: PlatformType): {
 
   // Generate recommendations
   if (frequency > guidelines.optimalFrequency) {
-    recommendations.push(\`Consider reducing posting frequency to ${guidelines.optimalFrequency} posts per day for better engagement\`)
+    recommendations.push('Consider reducing posting frequency to ' + guidelines.optimalFrequency + ' posts per day for better engagement')
   } else if (frequency < guidelines.optimalFrequency) {
-    recommendations.push(\`Try increasing posting frequency to ${guidelines.optimalFrequency} posts per day for better visibility\`)
+    recommendations.push('Try increasing posting frequency to ' + guidelines.optimalFrequency + ' posts per day for better visibility')
   }
 
   if (consistency < 0.5) {
