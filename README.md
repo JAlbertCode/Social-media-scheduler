@@ -6,8 +6,8 @@
 - [x] Calendar interface for content scheduling
   - [x] Drag and drop functionality
   - [x] Multi-platform post viewing
-  - [ ] Timeline view
-- [ ] Time zone management
+  - [x] Timeline view
+- [x] Time zone management
 - [ ] Posting frequency recommendations
 - [ ] Queue management
 

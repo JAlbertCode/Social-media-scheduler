@@ -5,6 +5,7 @@ export interface ScheduledPost {
   content: string
   platforms: PlatformType[]
   scheduledTime: Date
+  timezone?: string
   media?: { type: 'image' | 'video'; preview: string }[]
 }
 
