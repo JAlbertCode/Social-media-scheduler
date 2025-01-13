@@ -1,75 +1,79 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { google } from 'googleapis';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { uploadFile } from '@/lib/storage'
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const session = await getServerSession();
-    
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    
+    const formData = await req.formData()
+    const file = formData.get('file') as File
+    const type = formData.get('type') as string
+    const maxSizeMB = Number(formData.get('maxSize')) || 10
+
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Get user's Google credentials from database
-    const account = await prisma.account.findFirst({
-      where: {
-        userId: session.user.id as string,
-        provider: 'google',
-      },
-    });
+    // Convert File to Buffer
+    const buffer = Buffer.from(await file.arrayBuffer())
 
-    if (!account) {
-      return NextResponse.json({ error: 'Google account not connected' }, { status: 400 });
+    // Configure upload based on file type
+    const uploadConfig = {
+      userId: session.user.id,
+      contentType: file.type,
+      maxSizeInMB: maxSizeMB,
+      allowedTypes: type === 'image' 
+        ? ['image/jpeg', 'image/png', 'image/gif'] 
+        : ['video/mp4']
     }
 
-    // Set up Google Drive client
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({
-      access_token: account.access_token,
-      refresh_token: account.refresh_token,
-    });
+    // Upload to cloud storage
+    const url = await uploadFile(buffer, file.name, uploadConfig)
 
-    const drive = google.drive({ version: 'v3', auth: oauth2Client });
-
-    // Upload file to Google Drive
-    const buffer = await file.arrayBuffer();
-    const response = await drive.files.create({
-      requestBody: {
-        name: file.name,
-        mimeType: file.type,
-      },
-      media: {
-        mimeType: file.type,
-        body: buffer,
-      },
-    });
-
-    // Save file metadata to our database
-    const media = await prisma.media.create({
-      data: {
-        userId: session.user.id as string,
-        type: file.type.startsWith('image/') ? 'IMAGE' : 'VIDEO',
-        url: `https://drive.google.com/uc?id=${response.data.id}`,
-        googleDriveId: response.data.id,
-        mimeType: file.type,
-        size: file.size,
-      },
-    });
-
-    return NextResponse.json({ success: true, media });
+    return NextResponse.json({ url })
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('Upload error:', error)
     return NextResponse.json(
-      { error: 'Upload failed' },
+      { error: error instanceof Error ? error.message : 'Upload failed' },
       { status: 500 }
-    );
+    )
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const filePath = searchParams.get('path')
+
+    if (!filePath) {
+      return NextResponse.json({ error: 'No file path provided' }, { status: 400 })
+    }
+
+    // Ensure user can only delete their own files
+    if (!filePath.startsWith(session.user.id)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    await deleteFile(filePath)
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Delete error:', error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Delete failed' },
+      { status: 500 }
+    )
   }
 }
