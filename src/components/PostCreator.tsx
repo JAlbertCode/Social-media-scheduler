@@ -35,6 +35,7 @@ interface PostCreatorProps {
     urls: string[]
     threads?: string[]
     media?: File[]
+    scheduledTime?: Date
   }) => void
 }
 
@@ -46,6 +47,7 @@ export function PostCreator({ selectedPlatforms, onPostCreate }: PostCreatorProp
   const [threads, setThreads] = useState<string[]>([])
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [scheduledTime, setScheduledTime] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Parse content for hashtags, mentions, and URLs
@@ -81,15 +83,17 @@ export function PostCreator({ selectedPlatforms, onPostCreate }: PostCreatorProp
 
   // Handle post creation
   const handleCreate = useCallback(() => {
+    const scheduledDate = scheduledTime ? new Date(scheduledTime) : undefined
     onPostCreate({
       content,
       hashtags,
       mentions,
       urls,
       threads: threads.length > 0 ? threads : undefined,
-      media: mediaFiles.map(({ file }) => file)
+      media: mediaFiles.map(({ file }) => file),
+      scheduledTime: scheduledDate
     })
-  }, [content, hashtags, mentions, urls, threads, mediaFiles, onPostCreate])
+  }, [content, hashtags, mentions, urls, threads, mediaFiles, scheduledTime, onPostCreate])
 
   return (
     <div className="space-y-4 p-4 border rounded-lg">
@@ -126,6 +130,18 @@ export function PostCreator({ selectedPlatforms, onPostCreate }: PostCreatorProp
             );
           })}
         </div>
+      </div>
+
+      {/* Schedule Post */}
+      <div className="border-t pt-4">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Schedule Post</h3>
+        <input
+          type="datetime-local"
+          value={scheduledTime}
+          onChange={(e) => setScheduledTime(e.target.value)}
+          min={new Date().toISOString().slice(0, 16)}
+          className="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
       </div>
 
       {/* Media Upload */}
@@ -195,7 +211,7 @@ export function PostCreator({ selectedPlatforms, onPostCreate }: PostCreatorProp
         onClick={handleCreate}
         className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
       >
-        Create Post
+        {scheduledTime ? 'Schedule Post' : 'Create Post'}
       </button>
     </div>
   )
