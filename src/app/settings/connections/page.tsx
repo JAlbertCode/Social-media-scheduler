@@ -1,104 +1,119 @@
-'use client';
+'use client'
 
-import { ConnectButton } from '@/components/ConnectButton';
-import { useSession, signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { PlatformConnection } from '@/components/PlatformConnection'
+import { PlatformType } from '@/components/PostCreator'
+
+interface PlatformStatus {
+  isConnected: boolean
+  profileData?: {
+    username: string
+    displayName?: string
+    profileImage?: string
+  }
+}
+
+type PlatformStatuses = {
+  [key in PlatformType]?: PlatformStatus
+}
 
 export default function ConnectionsPage() {
-  const { data: session } = useSession();
-  const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession()
+  const [platformStatuses, setPlatformStatuses] = useState<PlatformStatuses>({})
+  const [isLoading, setIsLoading] = useState(true)
 
-  const handleConnect = async (provider: string) => {
-    try {
-      setError(null);
-      switch(provider.toLowerCase()) {
-        case 'twitter':
-          await signIn('twitter', { callbackUrl: '/settings/connections' });
-          break;
-        case 'instagram':
-          await signIn('instagram', { callbackUrl: '/settings/connections' });
-          break;
-        case 'linkedin':
-          await signIn('linkedin', { callbackUrl: '/settings/connections' });
-          break;
-        case 'google drive':
-          await signIn('google', { callbackUrl: '/settings/connections' });
-          break;
-        case 'notion':
-          await signIn('notion', { callbackUrl: '/settings/connections' });
-          break;
-        case 'tiktok':
-          await signIn('tiktok', { callbackUrl: '/settings/connections' });
-          break;
-        default:
-          setError(`Provider ${provider} not implemented yet`);
+  useEffect(() => {
+    const fetchPlatformStatuses = async () => {
+      try {
+        const response = await fetch('/api/platforms/status')
+        if (response.ok) {
+          const data = await response.json()
+          setPlatformStatuses(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch platform statuses:', error)
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error(`Error connecting to ${provider}:`, error);
-      setError(`Failed to connect to ${provider}. Please try again.`);
     }
-  };
+
+    if (session?.user) {
+      fetchPlatformStatuses()
+    }
+  }, [session])
+
+  const handleConnect = async (platform: PlatformType) => {
+    const response = await fetch(`/api/auth/${platform.toLowerCase()}`)
+    if (response.ok) {
+      const { url } = await response.json()
+      window.location.href = url
+    } else {
+      throw new Error('Failed to start authentication')
+    }
+  }
+
+  const handleDisconnect = async (platform: PlatformType) => {
+    const response = await fetch(
+      `/api/auth/${platform.toLowerCase()}`,
+      { method: 'DELETE' }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to disconnect')
+    }
+
+    setPlatformStatuses(current => ({
+      ...current,
+      [platform]: { isConnected: false }
+    }))
+  }
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+          Loading platform connections...
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-8">Connect Your Accounts</h1>
-      
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
-          {error}
+    <div className="container mx-auto p-4">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Platform Connections</h1>
+
+        <div className="space-y-4">
+          {(['Twitter', 'LinkedIn'] as PlatformType[]).map(platform => (
+            <PlatformConnection
+              key={platform}
+              platform={platform}
+              isConnected={platformStatuses[platform]?.isConnected ?? false}
+              profileData={platformStatuses[platform]?.profileData}
+              onConnect={() => handleConnect(platform)}
+              onDisconnect={() => handleDisconnect(platform)}
+            />
+          ))}
         </div>
-      )}
 
-      <div className="space-y-6">
-        {/* Social Media Platforms */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Social Media Platforms</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ConnectButton 
-              serviceName="Twitter" 
-              onClick={() => handleConnect('twitter')} 
-            />
-            <ConnectButton 
-              serviceName="Instagram" 
-              onClick={() => handleConnect('instagram')} 
-            />
-            <ConnectButton 
-              serviceName="LinkedIn" 
-              onClick={() => handleConnect('linkedin')} 
-            />
-            <ConnectButton 
-              serviceName="TikTok" 
-              onClick={() => handleConnect('tiktok')} 
-            />
+        <div className="mt-8 bg-gray-50 rounded-lg p-4">
+          <h2 className="text-lg font-medium mb-2">Coming Soon</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {['Instagram', 'TikTok', 'YouTube'].map(platform => (
+              <div
+                key={platform}
+                className="bg-white rounded-lg p-4 border opacity-50"
+              >
+                <div className="flex items-center justify-between">
+                  <span>{platform}</span>
+                  <span className="text-xs text-gray-500">Coming soon</span>
+                </div>
+              </div>
+            ))}
           </div>
-        </section>
-
-        {/* Integration Services */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Integrations</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ConnectButton 
-              serviceName="Google Drive" 
-              onClick={() => handleConnect('google drive')} 
-              connected={!!session}
-            />
-            <ConnectButton 
-              serviceName="Notion" 
-              onClick={() => handleConnect('notion')} 
-            />
-          </div>
-        </section>
-
-        {/* Connection Status */}
-        {session && (
-          <section className="mt-8 p-4 bg-green-50 rounded-lg">
-            <h3 className="text-lg font-medium text-green-800">Connected Accounts</h3>
-            <p className="text-sm text-green-600">
-              Logged in as: {session.user?.email}
-            </p>
-          </section>
-        )}
+        </div>
       </div>
     </div>
-  );
+  )
 }
