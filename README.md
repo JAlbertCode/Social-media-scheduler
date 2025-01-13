@@ -28,7 +28,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Platform-specific feature support:
   - [x] Hashtag suggestions
   - [x] Mention functionality
-  - [ ] Link preview handling
+  - [x] Link preview handling
 ### Scheduling System
 - [x] Calendar interface for content scheduling
   - [x] Drag and drop functionality
