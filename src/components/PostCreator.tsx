@@ -11,6 +11,15 @@ export type PlatformType =
   | 'YOUTUBE_SHORTS'
 export type ContentType = 'feed' | 'story' | 'reels'
 
+// Platform character limits
+const PLATFORM_LIMITS: Record<PlatformType, number> = {
+  TWITTER: 280,
+  INSTAGRAM: 2200,
+  TIKTOK: 2200,
+  LINKEDIN: 3000,
+  YOUTUBE_SHORTS: 1000,
+}
+
 interface MediaFile {
   file: File
   preview: string
@@ -86,12 +95,37 @@ export function PostCreator({ selectedPlatforms, onPostCreate }: PostCreatorProp
     <div className="space-y-4 p-4 border rounded-lg">
       {/* Content Editor */}
       <div className="relative">
+        <div className="mb-2 flex gap-2">
+          {selectedPlatforms.map(platform => (
+            <span key={platform} className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+              {platform}
+            </span>
+          ))}
+        </div>
         <textarea
           value={content}
           onChange={(e) => handleContentChange(e.target.value)}
           className="w-full h-40 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Write your post content..."
         />
+        <div className="absolute bottom-4 right-4 space-y-1 text-right">
+          {selectedPlatforms.map(platform => {
+            const limit = PLATFORM_LIMITS[platform];
+            const remaining = limit - content.length;
+            return (
+              <div
+                key={platform}
+                className={`text-sm ${
+                  remaining < 0 ? 'text-red-500' :
+                  remaining < limit * 0.1 ? 'text-yellow-500' :
+                  'text-gray-500'
+                }`}
+              >
+                {platform}: {remaining}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Media Upload */}
