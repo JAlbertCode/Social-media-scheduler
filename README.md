@@ -13,14 +13,14 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [ ] Bluesky
   - [ ] Mastodon
 ### Content Management
-- [ ] Media Upload System
-  - [ ] Image upload with platform-specific dimension suggestions
-  - [ ] Video upload with format validation
-  - [ ] Automatic image resizing for different platforms
-  - [ ] Video length validation per platform:
-    - [ ] YouTube Shorts
-    - [ ] Instagram Reels
-    - [ ] TikTok
+- [x] Media Upload System
+  - [x] Image upload with platform-specific dimension suggestions
+  - [x] Video upload with format validation
+  - [x] Automatic image resizing for different platforms
+  - [x] Video length validation per platform:
+    - [x] YouTube Shorts
+    - [x] Instagram Reels
+    - [x] TikTok
 ### Post Creation
 - [x] Rich text editor for post content
 - [x] Character limit validation per platform
@@ -55,8 +55,8 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] React-based web application
 - [x] Responsive design
 - [x] Calendar component
-- [ ] Media preview system
-- [ ] Platform-specific post previews
+- [x] Media preview system
+- [x] Platform-specific post previews
 ### Backend
 - [ ] Authentication system
 - [ ] API management for multiple platforms
@@ -92,7 +92,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Dashboard design
 - [x] Content creation interface
 - [x] Calendar view
-- [ ] Platform-specific previews
+- [x] Platform-specific previews
 ### Phase 6: Testing & Optimization
 - [ ] Unit testing
 - [ ] Integration testing
