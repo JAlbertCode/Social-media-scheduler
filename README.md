@@ -4,11 +4,11 @@ A comprehensive social media scheduling platform that allows seamless content ma
 ### Platform Integration
 - [ ] Authentication and API integration for:
   - [x] TikTok
-  - [ ] Instagram
+  - [x] Instagram
   - [x] Twitter
   - [ ] Warpcast
   - [x] YouTube
-  - [ ] LinkedIn
+  - [x] LinkedIn
   - [x] Threads
   - [ ] Bluesky
   - [ ] Mastodon
@@ -59,7 +59,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Platform-specific post previews
 ### Backend
 - [x] Authentication system
-- [ ] API management for multiple platforms
+- [x] API management for multiple platforms
 - [ ] Media processing service
 - [ ] Scheduling service
 - [ ] Notion API integration
