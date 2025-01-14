@@ -49,7 +49,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Post status tracking
 - [x] Scheduling conflicts detection
 - [x] Failed post notifications
-- [ ] Basic analytics per platform
+- [x] Basic analytics per platform
 ## Technical Requirements
 ### Frontend
 - [x] React-based web application
