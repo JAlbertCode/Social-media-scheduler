@@ -60,7 +60,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 ### Backend
 - [x] Authentication system
 - [x] API management for multiple platforms
-- [ ] Media processing service
+- [x] Media processing service
 - [ ] Scheduling service
 - [ ] Notion API integration
 - [x] Database schema design
