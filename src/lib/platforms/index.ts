@@ -4,6 +4,7 @@ import { LinkedInPlatform } from './linkedin'
 import { InstagramPlatform } from './instagram'
 import { TikTokPlatform } from './tiktok'
 import { YouTubePlatform } from './youtube'
+import { ThreadsPlatform } from './threads'
 import { SocialPlatform } from './types'
 
 export class PlatformFactory {
@@ -14,6 +15,8 @@ export class PlatformFactory {
       switch (type) {
         case 'Twitter':
           this.instances.set(type, new TwitterPlatform())
+          case 'Threads':
+          this.instances.set(type, new ThreadsPlatform())
           break
         case 'LinkedIn':
           this.instances.set(type, new LinkedInPlatform())

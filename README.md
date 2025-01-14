@@ -9,7 +9,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [ ] Warpcast
   - [x] YouTube
   - [ ] LinkedIn
-  - [ ] Threads
+  - [x] Threads
   - [ ] Bluesky
   - [ ] Mastodon
 ### Content Management
