@@ -54,17 +54,33 @@ model VerificationToken {
 }
 
 model Post {
-  id            String      @id @default(cuid())
+  id            String         @id @default(cuid())
   content       String
-  platforms     String[]    // Store as JSON array
+  platforms     String[]      // Store as JSON array
   scheduledTime DateTime?
   publishedTime DateTime?
-  status        PostStatus  @default(DRAFT)
-  media         Json?       // Store media metadata as JSON
+  status        PostStatus    @default(DRAFT)
+  media         Json?         // Store media metadata as JSON
+  metrics       String?       // Store engagement metrics as JSON
+  platformData  String?       // Store platform-specific data as JSON
+  errorDetails  String?       // Store error messages
   userId        String
-  user          User        @relation(fields: [userId], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  user          User          @relation(fields: [userId], references: [id])
+  statusLogs    PostStatusLog[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model PostStatusLog {
+  id            String      @id @default(cuid())
+  postId        String
+  post          Post        @relation(fields: [postId], references: [id])
+  status        PostStatus
+  platformId    String      // Platform's internal post ID
+  errorMessage  String?
+  timestamp     DateTime    @default(now())
+  
+  @@index([postId, timestamp])
 }
 
 enum PostStatus {
