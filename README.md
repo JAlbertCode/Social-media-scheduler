@@ -39,9 +39,9 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Queue management
 ### Notion Integration
 - [ ] Bidirectional sync with Notion
-  - [ ] Content status tracking
-  - [ ] Automatic content creation from Notion pages
-  - [ ] Status updates in Notion
+  - [x] Content status tracking
+  - [x] Automatic content creation from Notion pages
+  - [x] Status updates in Notion
 - [ ] Content template system
   - [ ] Platform-specific formatting
   - [ ] Variable substitution
