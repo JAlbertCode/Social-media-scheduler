@@ -3,11 +3,11 @@ A comprehensive social media scheduling platform that allows seamless content ma
 ## Features
 ### Platform Integration
 - [ ] Authentication and API integration for:
-  - [ ] TikTok
+  - [x] TikTok
   - [ ] Instagram
   - [ ] Twitter
   - [ ] Warpcast
-  - [ ] YouTube
+  - [x] YouTube
   - [ ] LinkedIn
   - [ ] Threads
   - [ ] Bluesky
