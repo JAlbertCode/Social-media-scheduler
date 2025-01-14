@@ -17,7 +17,7 @@ interface TwitterTokenResponse {
   access_token: string
   refresh_token?: string
   expires_in?: number
-  token_type: string
+  scope?: string
 }
 
 interface TwitterUser {
@@ -26,11 +26,17 @@ interface TwitterUser {
   name: string
   profile_image_url?: string
   verified?: boolean
+  public_metrics?: {
+    followers_count: number
+    following_count: number
+    tweet_count: number
+  }
 }
 
 interface TwitterMediaUpload {
   media_id_string: string
-  media_type: string
+  media_key: string
+  type: 'photo' | 'video' | 'animated_gif'
   url?: string
 }
 
@@ -38,6 +44,15 @@ interface TwitterTweet {
   id: string
   text: string
   created_at: string
+  conversation_id: string
+  in_reply_to_user_id?: string
+}
+
+interface TwitterThreadConfig {
+  replyToTweet?: string
+  quoteTweet?: string
+  excludeReplyUserIds?: string[]
+  autoPopulateReplyMetadata?: boolean
 }
 
 export class TwitterPlatform extends SocialPlatform {
@@ -51,6 +66,7 @@ export class TwitterPlatform extends SocialPlatform {
       scopes: [
         'tweet.read',
         'tweet.write',
+        'tweet.moderate',
         'users.read',
         'offline.access'
       ],
@@ -71,7 +87,8 @@ export class TwitterPlatform extends SocialPlatform {
         client_secret: this.config.clientSecret,
         grant_type: 'authorization_code',
         code,
-        redirect_uri: this.config.redirectUri
+        redirect_uri: this.config.redirectUri,
+        code_verifier: 'challenge' // In production, use proper PKCE
       })
 
       const response = await fetch(this.config.tokenUrl, {
@@ -91,10 +108,10 @@ export class TwitterPlatform extends SocialPlatform {
       return {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
-        tokenType: data.token_type,
         expiresAt: data.expires_in 
           ? new Date(Date.now() + data.expires_in * 1000)
-          : undefined
+          : undefined,
+        scope: data.scope
       }
     } catch (error) {
       return this.handleError(error)
@@ -126,11 +143,11 @@ export class TwitterPlatform extends SocialPlatform {
       
       return {
         accessToken: data.access_token,
-        refreshToken: data.refresh_token,
-        tokenType: data.token_type,
+        refreshToken: data.refresh_token || refreshToken,
         expiresAt: data.expires_in 
           ? new Date(Date.now() + data.expires_in * 1000)
-          : undefined
+          : undefined,
+        scope: data.scope
       }
     } catch (error) {
       return this.handleError(error)
@@ -145,7 +162,7 @@ export class TwitterPlatform extends SocialPlatform {
       scope: this.config.scopes.join(' '),
       state: 'twitter',
       code_challenge_method: 'S256',
-      code_challenge: 'challenge' // In production, generate this properly
+      code_challenge: 'challenge' // In production, use proper PKCE
     })
 
     return `${this.config.authUrl}?${params.toString()}`
@@ -153,24 +170,28 @@ export class TwitterPlatform extends SocialPlatform {
 
   async getUser(accessToken: string): Promise<PlatformUser> {
     try {
-      const response = await fetch(`${this.config.apiBaseUrl}/users/me`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
+      const response = await fetch(
+        `${this.config.apiBaseUrl}/users/me?user.fields=profile_image_url,verified,public_metrics`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
         }
-      })
+      )
 
       if (!response.ok) {
         throw await response.json()
       }
 
-      const data: { data: TwitterUser } = await response.json()
-      
+      const data = await response.json()
+      const user: TwitterUser = data.data
+
       return {
-        id: data.data.id,
-        username: data.data.username,
-        displayName: data.data.name,
-        profileImage: data.data.profile_image_url,
-        isVerified: data.data.verified
+        id: user.id,
+        username: user.username,
+        displayName: user.name,
+        profileImage: user.profile_image_url,
+        isVerified: user.verified
       }
     } catch (error) {
       return this.handleError(error)
@@ -184,9 +205,7 @@ export class TwitterPlatform extends SocialPlatform {
   ): Promise<MediaUploadResult> {
     try {
       // For videos, use chunked upload
-      const isVideo = mediaType.startsWith('video/')
-      
-      if (isVideo) {
+      if (mediaType.startsWith('video/')) {
         return await this.uploadVideoChunked(file, mediaType, accessToken)
       }
 
@@ -194,13 +213,16 @@ export class TwitterPlatform extends SocialPlatform {
       const form = new FormData()
       form.append('media', new Blob([file], { type: mediaType }))
 
-      const response = await fetch(`${this.config.uploadBaseUrl}/media/upload.json`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        },
-        body: form
-      })
+      const response = await fetch(
+        `${this.config.uploadBaseUrl}/media/upload.json`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: form
+        }
+      )
 
       if (!response.ok) {
         throw await response.json()
@@ -210,7 +232,8 @@ export class TwitterPlatform extends SocialPlatform {
       
       return {
         mediaId: data.media_id_string,
-        mediaType: data.media_type === 'video' ? 'video' : 'image',
+        mediaKey: data.media_key,
+        mediaType: data.type === 'photo' ? 'image' : 'video',
         url: data.url
       }
     } catch (error) {
@@ -224,83 +247,27 @@ export class TwitterPlatform extends SocialPlatform {
     accessToken: string
   ): Promise<MediaUploadResult> {
     try {
-      // INIT
-      const initResponse = await fetch(
-        `${this.config.uploadBaseUrl}/media/upload.json`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            command: 'INIT',
-            total_bytes: file.length,
-            media_type: mediaType
-          })
-        }
-      )
+      // INIT phase
+      const initData = await this.uploadInit(file.length, mediaType, accessToken)
 
-      if (!initResponse.ok) {
-        throw await initResponse.json()
-      }
-
-      const { media_id_string } = await initResponse.json()
-
-      // APPEND
+      // APPEND phase
       const chunkSize = 5 * 1024 * 1024 // 5MB chunks
-      let segmentIndex = 0
-
       for (let i = 0; i < file.length; i += chunkSize) {
         const chunk = file.slice(i, i + chunkSize)
-        const form = new FormData()
-        form.append('command', 'APPEND')
-        form.append('media_id', media_id_string)
-        form.append('segment_index', segmentIndex.toString())
-        form.append('media', new Blob([chunk]))
-
-        const appendResponse = await fetch(
-          `${this.config.uploadBaseUrl}/media/upload.json`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${accessToken}`
-            },
-            body: form
-          }
+        await this.uploadAppend(
+          initData.media_id_string,
+          chunk,
+          i / chunkSize,
+          accessToken
         )
-
-        if (!appendResponse.ok) {
-          throw await appendResponse.json()
-        }
-
-        segmentIndex++
       }
 
-      // FINALIZE
-      const finalizeResponse = await fetch(
-        `${this.config.uploadBaseUrl}/media/upload.json`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            command: 'FINALIZE',
-            media_id: media_id_string
-          })
-        }
-      )
+      // FINALIZE phase
+      const finalData = await this.uploadFinalize(initData.media_id_string, accessToken)
 
-      if (!finalizeResponse.ok) {
-        throw await finalizeResponse.json()
-      }
-
-      const finalData: TwitterMediaUpload = await finalizeResponse.json()
-      
       return {
         mediaId: finalData.media_id_string,
+        mediaKey: finalData.media_key,
         mediaType: 'video',
         url: finalData.url
       }
@@ -309,49 +276,140 @@ export class TwitterPlatform extends SocialPlatform {
     }
   }
 
+  private async uploadInit(
+    totalBytes: number,
+    mediaType: string,
+    accessToken: string
+  ): Promise<TwitterMediaUpload> {
+    const response = await fetch(
+      `${this.config.uploadBaseUrl}/media/upload.json`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          command: 'INIT',
+          total_bytes: totalBytes,
+          media_type: mediaType
+        })
+      }
+    )
+
+    if (!response.ok) {
+      throw await response.json()
+    }
+
+    return response.json()
+  }
+
+  private async uploadAppend(
+    mediaId: string,
+    chunk: Buffer,
+    segmentIndex: number,
+    accessToken: string
+  ): Promise<void> {
+    const form = new FormData()
+    form.append('command', 'APPEND')
+    form.append('media_id', mediaId)
+    form.append('segment_index', segmentIndex.toString())
+    form.append('media', new Blob([chunk]))
+
+    const response = await fetch(
+      `${this.config.uploadBaseUrl}/media/upload.json`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: form
+      }
+    )
+
+    if (!response.ok) {
+      throw await response.json()
+    }
+  }
+
+  private async uploadFinalize(
+    mediaId: string,
+    accessToken: string
+  ): Promise<TwitterMediaUpload> {
+    const response = await fetch(
+      `${this.config.uploadBaseUrl}/media/upload.json`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          command: 'FINALIZE',
+          media_id: mediaId
+        })
+      }
+    )
+
+    if (!response.ok) {
+      throw await response.json()
+    }
+
+    return response.json()
+  }
+
   async createPost(
     content: string,
     mediaIds: string[],
     accessToken: string,
-    options?: { reply_to?: string }
+    threadConfig?: TwitterThreadConfig
   ): Promise<PostResult> {
     try {
       const payload: any = {
-        text: content
+        text: content,
+        ...(mediaIds.length > 0 && {
+          media: {
+            media_ids: mediaIds
+          }
+        })
       }
 
-      if (mediaIds.length > 0) {
-        payload.media = {
-          media_ids: mediaIds
+      if (threadConfig) {
+        if (threadConfig.replyToTweet) {
+          payload.reply = {
+            in_reply_to_tweet_id: threadConfig.replyToTweet,
+            exclude_reply_user_ids: threadConfig.excludeReplyUserIds
+          }
+        }
+        if (threadConfig.quoteTweet) {
+          payload.quote_tweet_id = threadConfig.quoteTweet
         }
       }
 
-      if (options?.reply_to) {
-        payload.reply = {
-          in_reply_to_tweet_id: options.reply_to
+      const response = await fetch(
+        `${this.config.apiBaseUrl}/tweets`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
         }
-      }
-
-      const response = await fetch(`${this.config.apiBaseUrl}/tweets`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      })
+      )
 
       if (!response.ok) {
         throw await response.json()
       }
 
-      const data: { data: TwitterTweet } = await response.json()
-      
+      const tweet: TwitterTweet = (await response.json()).data
+
       return {
-        id: data.data.id,
-        url: `https://twitter.com/i/web/status/${data.data.id}`,
-        createdAt: new Date(data.data.created_at),
-        platform: 'Twitter'
+        id: tweet.id,
+        url: `https://twitter.com/i/web/status/${tweet.id}`,
+        createdAt: new Date(tweet.created_at),
+        platform: 'Twitter',
+        threadId: tweet.conversation_id
       }
     } catch (error) {
       return this.handleError(error)
@@ -365,7 +423,7 @@ export class TwitterPlatform extends SocialPlatform {
         {
           method: 'DELETE',
           headers: {
-            Authorization: `Bearer ${accessToken}`
+            'Authorization': `Bearer ${accessToken}`
           }
         }
       )
@@ -376,5 +434,33 @@ export class TwitterPlatform extends SocialPlatform {
     } catch (error) {
       return this.handleError(error)
     }
+  }
+
+  async createThread(
+    tweets: Array<{
+      content: string
+      mediaIds?: string[]
+    }>,
+    accessToken: string
+  ): Promise<PostResult[]> {
+    const results: PostResult[] = []
+    let previousTweet: PostResult | undefined
+
+    for (const tweet of tweets) {
+      const result = await this.createPost(
+        tweet.content,
+        tweet.mediaIds || [],
+        accessToken,
+        previousTweet ? {
+          replyToTweet: previousTweet.id,
+          autoPopulateReplyMetadata: true
+        } : undefined
+      )
+
+      results.push(result)
+      previousTweet = result
+    }
+
+    return results
   }
 }

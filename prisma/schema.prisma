@@ -2,6 +2,18 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model PlatformPreferences {
+  userId             String
+  platform           String
+  defaultThreadStyle String?
+  autoReplyToThread  Boolean   @default(true)
+  threadPacing       Int       @default(0)
+  includeTrailingHashtags Boolean @default(true)
+  user               User      @relation(fields: [userId], references: [id])
+
+  @@id([userId, platform])
+}
+
 model ContentTemplate {
   id               String   @id @default(cuid())
   name             String
@@ -72,6 +84,7 @@ model User {
   accounts      Account[]
   notionSyncs   NotionSync[]
   templates     ContentTemplate[]
+  preferences   PlatformPreferences[]
   sessions      Session[]
   posts         Post[]
 }

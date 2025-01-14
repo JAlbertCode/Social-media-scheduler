@@ -5,7 +5,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [ ] Authentication and API integration for:
   - [x] TikTok
   - [ ] Instagram
-  - [ ] Twitter
+  - [x] Twitter
   - [ ] Warpcast
   - [x] YouTube
   - [ ] LinkedIn
