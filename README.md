@@ -24,7 +24,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 ### Post Creation
 - [x] Rich text editor for post content
 - [x] Character limit validation per platform
-- [ ] Automatic thread suggestion for Twitter and Threads
+- [x] Automatic thread suggestion for Twitter and Threads
 - [x] Platform-specific feature support:
   - [x] Hashtag suggestions
   - [x] Mention functionality
