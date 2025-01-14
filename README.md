@@ -42,9 +42,9 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [x] Content status tracking
   - [x] Automatic content creation from Notion pages
   - [x] Status updates in Notion
-- [ ] Content template system
-  - [ ] Platform-specific formatting
-  - [ ] Variable substitution
+- [x] Content template system
+  - [x] Platform-specific formatting
+  - [x] Variable substitution
 ### Analytics & Monitoring
 - [x] Post status tracking
 - [x] Scheduling conflicts detection

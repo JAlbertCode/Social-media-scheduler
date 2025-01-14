@@ -2,6 +2,22 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model ContentTemplate {
+  id               String   @id @default(cuid())
+  name             String
+  description      String?
+  variables        Json     // Array of TemplateVariable
+  content          String
+  platforms        Json     // Array of platform configurations
+  userId           String
+  notionTemplateId String?
+  user             User     @relation(fields: [userId], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+}
+
 model NotionSync {
   id           String   @id @default(cuid())
   userId       String
@@ -55,6 +71,7 @@ model User {
   image         String?
   accounts      Account[]
   notionSyncs   NotionSync[]
+  templates     ContentTemplate[]
   sessions      Session[]
   posts         Post[]
 }
