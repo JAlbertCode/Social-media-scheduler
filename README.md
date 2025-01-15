@@ -94,7 +94,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Calendar view
 - [x] Platform-specific previews
 ### Phase 6: Testing & Optimization
-- [ ] Unit testing
+- [x] Unit testing
 - [ ] Integration testing
 - [ ] Performance optimization
 - [ ] Security audit
