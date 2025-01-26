@@ -162,20 +162,20 @@ export function PostCreator({ selectedPlatforms, onPostCreate }: PostCreatorProp
 
       {/* Media Preview */}
       {mediaFiles.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[300px] overflow-y-auto">
           {mediaFiles.map((file, index) => (
             <div key={index} className="relative group">
-              <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-100">
+              <div className="relative w-[150px] h-[150px] overflow-hidden rounded-lg bg-gray-100">
                 {file.type === 'image' ? (
                   <img
                     src={file.preview}
                     alt={`Preview ${index + 1}`}
-                    className="object-cover"
+                    className="object-cover w-[150px] h-[150px]"
                   />
                 ) : (
                   <video
                     src={file.preview}
-                    className="object-cover"
+                    className="object-cover w-[150px] h-[150px]"
                     controls
                   />
                 )}
