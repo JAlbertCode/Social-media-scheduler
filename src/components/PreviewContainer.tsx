@@ -23,16 +23,22 @@ const PLATFORM_CONFIG = {
     icon: FaTwitter,
     bgColor: '#15202b',
     textColor: 'white',
+    iconColor: 'whiteAlpha.800',
+    borderColor: 'whiteAlpha.200'
   },
   LinkedIn: {
     icon: FaLinkedin,
     bgColor: 'white',
     textColor: 'gray.900',
+    iconColor: 'gray.600',
+    borderColor: 'gray.200'
   },
   Instagram: {
     icon: FaInstagram,
     bgColor: 'white',
     textColor: 'gray.900',
+    iconColor: 'gray.600',
+    borderColor: 'gray.200'
   }
 }
 
@@ -68,11 +74,18 @@ export function PreviewContainer({ platforms, content, media }: PreviewContainer
         rounded="lg"
         overflow="hidden"
         shadow="sm"
+        borderColor={PLATFORM_CONFIG[selectedPlatform].borderColor}
+        borderWidth="1px"
       >
         <PostPreview
           platform={selectedPlatform}
           content={content}
           media={media}
+          colors={{
+            textColor: PLATFORM_CONFIG[selectedPlatform].textColor,
+            iconColor: PLATFORM_CONFIG[selectedPlatform].iconColor,
+            borderColor: PLATFORM_CONFIG[selectedPlatform].borderColor
+          }}
         />
       </Box>
     </VStack>

@@ -31,6 +31,11 @@ interface PostPreviewProps {
   platform: PlatformType
   content: string
   media?: Array<{ type: 'image' | 'video'; preview: string }>
+  colors?: {
+    textColor: string
+    iconColor: string
+    borderColor: string
+  }
 }
 
 const platformConfig = {
@@ -70,8 +75,28 @@ const platformConfig = {
   }
 }
 
-export function PostPreview({ platform, content, media }: PostPreviewProps) {
+export function PostPreview({ 
+  platform, 
+  content, 
+  media, 
+  colors = {
+    textColor: 'gray.900',
+    iconColor: 'gray.600',
+    borderColor: 'gray.200'
+  } 
+}: PostPreviewProps) {
   const config = platformConfig[platform]
+
+  const SocialAction = ({ icon: IconComponent, label }: { icon: React.ComponentType, label: string }) => (
+    <IconButton
+      icon={<IconComponent size="16px" />}
+      aria-label={label}
+      variant="ghost"
+      size="sm"
+      color={colors.iconColor}
+      _hover={{ color: colors.textColor }}
+    />
+  )
 
   const TwitterPreview = () => (
     <Box p={4}>
@@ -83,10 +108,10 @@ export function PostPreview({ platform, content, media }: PostPreviewProps) {
         />
         <VStack align="stretch" flex={1} spacing={2}>
           <HStack>
-            <Text fontWeight="bold">{config.name}</Text>
-            <Text color="gray.500">{config.handle}</Text>
+            <Text color={colors.textColor} fontWeight="bold">{config.name}</Text>
+            <Text color={colors.iconColor}>{config.handle}</Text>
           </HStack>
-          <Text>{content}</Text>
+          <Text color={colors.textColor}>{content}</Text>
           {media && media.length > 0 && (
             <Wrap spacing={2}>
               {media.map((item, index) => (
@@ -117,15 +142,7 @@ export function PostPreview({ platform, content, media }: PostPreviewProps) {
           )}
           <HStack spacing={6} pt={2}>
             {config.actions.map((action, index) => (
-              <IconButton
-                key={index}
-                icon={<Icon as={action.icon} boxSize={4} />}
-                aria-label={action.label}
-                variant="ghost"
-                size="sm"
-                color="gray.500"
-                _hover={{ color: platform === 'Twitter' ? 'blue.400' : 'gray.600' }}
-              />
+              <SocialAction key={index} {...action} />
             ))}
           </HStack>
         </VStack>
@@ -143,11 +160,11 @@ export function PostPreview({ platform, content, media }: PostPreviewProps) {
         />
         <VStack align="stretch" flex={1} spacing={2}>
           <Box>
-            <Text fontWeight="semibold">{config.name}</Text>
-            <Text fontSize="sm" color="gray.600">{config.headline}</Text>
-            <Text fontSize="xs" color="gray.500">3h • Edited</Text>
+            <Text color={colors.textColor} fontWeight="semibold">{config.name}</Text>
+            <Text fontSize="sm" color={colors.iconColor}>{config.headline}</Text>
+            <Text fontSize="xs" color={colors.iconColor}>3h • Edited</Text>
           </Box>
-          <Text>{content}</Text>
+          <Text color={colors.textColor}>{content}</Text>
           {media && media.length > 0 && (
             <AspectRatio ratio={16/9}>
               <Box overflow="hidden" rounded="md">
@@ -167,17 +184,9 @@ export function PostPreview({ platform, content, media }: PostPreviewProps) {
               </Box>
             </AspectRatio>
           )}
-          <HStack spacing={6} pt={2} borderTop="1px" borderColor="gray.200">
+          <HStack spacing={6} pt={2} borderTop="1px" borderColor={colors.borderColor}>
             {config.actions.map((action, index) => (
-              <IconButton
-                key={index}
-                icon={<Icon as={action.icon} boxSize={4} />}
-                aria-label={action.label}
-                variant="ghost"
-                size="sm"
-                color="gray.600"
-                _hover={{ color: 'blue.600' }}
-              />
+              <SocialAction key={index} {...action} />
             ))}
           </HStack>
         </VStack>
@@ -191,7 +200,7 @@ export function PostPreview({ platform, content, media }: PostPreviewProps) {
         justify="space-between" 
         p={3} 
         borderBottom="1px" 
-        borderColor="gray.100"
+        borderColor={colors.borderColor}
       >
         <HStack spacing={3}>
           <Avatar
@@ -199,15 +208,17 @@ export function PostPreview({ platform, content, media }: PostPreviewProps) {
             size="sm"
             name={config.username}
           />
-          <Text fontWeight="semibold" fontSize="sm">
+          <Text fontWeight="semibold" fontSize="sm" color={colors.textColor}>
             {config.username}
           </Text>
         </HStack>
         <IconButton
-          icon={<Icon as={FaEllipsisH} boxSize={4} />}
+          icon={<FaEllipsisH size="16px" />}
           aria-label="More options"
           variant="ghost"
           size="sm"
+          color={colors.iconColor}
+          _hover={{ color: colors.textColor }}
         />
       </HStack>
 
@@ -235,23 +246,12 @@ export function PostPreview({ platform, content, media }: PostPreviewProps) {
         <HStack justify="space-between" mb={2}>
           <HStack spacing={4}>
             {config.actions.slice(0, 3).map((action, index) => (
-              <IconButton
-                key={index}
-                icon={<Icon as={action.icon} boxSize={5} />}
-                aria-label={action.label}
-                variant="ghost"
-                size="sm"
-              />
+              <SocialAction key={index} {...action} />
             ))}
           </HStack>
-          <IconButton
-            icon={<Icon as={config.actions[3].icon} boxSize={5} />}
-            aria-label={config.actions[3].label}
-            variant="ghost"
-            size="sm"
-          />
+          <SocialAction {...config.actions[3]} />
         </HStack>
-        <Text fontSize="sm">
+        <Text fontSize="sm" color={colors.textColor}>
           <Text as="span" fontWeight="semibold" mr={2}>
             {config.username}
           </Text>
