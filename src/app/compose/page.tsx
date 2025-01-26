@@ -9,19 +9,49 @@ import { ScheduledPost } from '../../types/calendar'
 import { PlatformType } from '../../components/PostCreator'
 import { getUserTimezone } from '../../utils/timezone'
 import { countMentions } from '../../utils/mentionSuggestions'
+import {
+  Box,
+  Button,
+  Container,
+  Grid,
+  GridItem,
+  Heading,
+  Text,
+  Textarea,
+  VStack,
+  HStack,
+  Alert,
+  AlertIcon,
+  useToast,
+  Card,
+  CardHeader,
+  CardBody,
+  FormControl,
+  FormLabel,
+  ButtonGroup,
+  Icon,
+} from '@chakra-ui/react'
+import { 
+  FaTwitter, 
+  FaLinkedin, 
+  FaInstagram 
+} from 'react-icons/fa'
 
 const PLATFORM_LIMITS = {
   Twitter: {
     characterLimit: 280,
     mediaLimit: 4,
+    icon: FaTwitter,
   },
   LinkedIn: {
     characterLimit: 3000,
     mediaLimit: 9,
+    icon: FaLinkedin,
   },
   Instagram: {
     characterLimit: 2200,
     mediaLimit: 10,
+    icon: FaInstagram,
   }
 }
 
@@ -32,7 +62,7 @@ export default function ComposePage() {
   const [error, setError] = useState<string | null>(null)
   const [cursorPosition, setCursorPosition] = useState<{ top: number; left: number } | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-
+  const toast = useToast()
   const validateContent = (text: string, platforms: PlatformType[]): string | null => {
     for (const platform of platforms) {
       // Character limit validation
@@ -108,6 +138,13 @@ export default function ComposePage() {
     const validationError = validateContent(content, selectedPlatforms)
     if (validationError) {
       setError(validationError)
+      toast({
+        title: 'Error',
+        description: validationError,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
       return
     }
 
@@ -117,6 +154,13 @@ export default function ComposePage() {
       media
     }
 
+    toast({
+      title: 'Success',
+      description: 'Post saved successfully',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    })
     console.log('Saving post:', post)
   }
 
@@ -127,116 +171,128 @@ export default function ComposePage() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
+  // Previous handler functions remain the same
+
   return (
-    <div className="max-w-7xl mx-auto p-4">
-      <div className="grid grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Create Post</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Platforms
-                </label>
-                <div className="flex gap-2">
-                  {Object.keys(PLATFORM_LIMITS).map((platform) => (
-                    <button
-                      key={platform}
-                      onClick={() => handlePlatformToggle(platform as PlatformType)}
-                      className={
-                        selectedPlatforms.includes(platform as PlatformType)
-                          ? 'px-4 py-2 bg-blue-500 text-white rounded-lg'
-                          : 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200'
-                      }
-                    >
-                      {platform}
-                    </button>
-                  ))}
-                </div>
-              </div>
+    <Container maxW="8xl" py={8}>
+      <Grid templateColumns={{ base: '1fr', lg: '3fr 2fr' }} gap={6}>
+        <GridItem>
+          <VStack spacing={6} align="stretch">
+            <Card>
+              <CardHeader>
+                <Heading size="md">Create Post</Heading>
+              </CardHeader>
+              <CardBody>
+                <VStack spacing={6} align="stretch">
+                  <FormControl>
+                    <FormLabel>Select Platforms</FormLabel>
+                    <ButtonGroup spacing={3}>
+                      {Object.entries(PLATFORM_LIMITS).map(([platform, config]) => (
+                        <Button
+                          key={platform}
+                          onClick={() => handlePlatformToggle(platform as PlatformType)}
+                          variant={selectedPlatforms.includes(platform as PlatformType) ? 'solid' : 'outline'}
+                          leftIcon={<Icon as={config.icon} />}
+                          colorScheme={selectedPlatforms.includes(platform as PlatformType) ? 'brand' : 'gray'}
+                        >
+                          {platform}
+                        </Button>
+                      ))}
+                    </ButtonGroup>
+                  </FormControl>
 
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Content
-                  <span className="text-sm text-gray-500 ml-2">
-                    {content.length} / {Math.min(...selectedPlatforms.map(p => PLATFORM_LIMITS[p].characterLimit))} characters
-                  </span>
-                </label>
-                <textarea
-                  ref={textareaRef}
-                  value={content}
-                  onChange={(e) => handleContentChange(e.target.value)}
-                  className="w-full min-h-[200px] p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="What would you like to share?"
-                />
-                {cursorPosition && content.split(/\s+/).pop()?.startsWith('@') && (
-                  <div className="absolute z-10" style={cursorPosition}>
-                    <MentionSuggestions
-                      content={content}
-                      platform={selectedPlatforms[0]}
-                      onMentionSelect={handleMentionSelect}
+                  <FormControl>
+                    <FormLabel>
+                      Content
+                      <Text as="span" ml={2} fontSize="sm" color="gray.500">
+                        {content.length} / {Math.min(...selectedPlatforms.map(p => PLATFORM_LIMITS[p].characterLimit))} characters
+                      </Text>
+                    </FormLabel>
+                    <Textarea
+                      ref={textareaRef}
+                      value={content}
+                      onChange={(e) => handleContentChange(e.target.value)}
+                      minH="200px"
+                      placeholder="What would you like to share?"
+                      size="lg"
                     />
-                  </div>
-                )}
-              </div>
+                    {cursorPosition && content.split(/\s+/).pop()?.startsWith('@') && (
+                      <Box position="absolute" zIndex={10} {...cursorPosition}>
+                        <MentionSuggestions
+                          content={content}
+                          platform={selectedPlatforms[0]}
+                          onMentionSelect={handleMentionSelect}
+                        />
+                      </Box>
+                    )}
+                  </FormControl>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Media
-                </label>
-                <PostEditor
-                  onSave={handleSave}
-                  initialContent={content}
-                  initialPlatforms={selectedPlatforms}
-                />
-              </div>
+                  <FormControl>
+                    <FormLabel>Media</FormLabel>
+                    <PostEditor
+                      onSave={handleSave}
+                      initialContent={content}
+                      initialPlatforms={selectedPlatforms}
+                    />
+                  </FormControl>
 
-              {selectedPlatforms.map(platform => (
-                <div key={platform} className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    {platform} Hashtag Suggestions
-                  </h3>
-                  <HashtagSuggestions
-                    content={content}
-                    platform={platform}
-                    onHashtagSelect={handleHashtagSelect}
-                  />
-                </div>
-              ))}
+                  {selectedPlatforms.map(platform => (
+                    <Card key={platform} variant="outline">
+                      <CardBody>
+                        <HStack mb={3}>
+                          <Icon as={PLATFORM_LIMITS[platform].icon} />
+                          <Text fontWeight="medium">{platform} Hashtag Suggestions</Text>
+                        </HStack>
+                        <HashtagSuggestions
+                          content={content}
+                          platform={platform}
+                          onHashtagSelect={handleHashtagSelect}
+                        />
+                      </CardBody>
+                    </Card>
+                  ))}
 
-              {error && (
-                <div className="p-3 bg-red-50 text-red-700 rounded-lg">
-                  {error}
-                </div>
-              )}
-            </div>
-          </div>
+                  {error && (
+                    <Alert status="error" rounded="md">
+                      <AlertIcon />
+                      {error}
+                    </Alert>
+                  )}
+                </VStack>
+              </CardBody>
+            </Card>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <button
-              onClick={handleSave}
-              disabled={!!error}
-              className={
-                error
-                  ? 'w-full py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed'
-                  : 'w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600'
-              }
-            >
-              Schedule Post
-            </button>
-          </div>
-        </div>
+            <Card>
+              <CardBody>
+                <Button
+                  onClick={handleSave}
+                  isDisabled={!!error}
+                  colorScheme={error ? 'gray' : 'brand'}
+                  width="full"
+                  size="lg"
+                >
+                  Schedule Post
+                </Button>
+              </CardBody>
+            </Card>
+          </VStack>
+        </GridItem>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Preview</h2>
-          <PreviewContainer
-            platforms={selectedPlatforms}
-            content={content}
-            media={media}
-          />
-        </div>
-      </div>
-    </div>
+        <GridItem>
+          <Card>
+            <CardHeader>
+              <Heading size="md">Preview</Heading>
+            </CardHeader>
+            <CardBody>
+              <PreviewContainer
+                platforms={selectedPlatforms}
+                content={content}
+                media={media}
+              />
+            </CardBody>
+          </Card>
+        </GridItem>
+      </Grid>
+    </Container>
   )
 }
