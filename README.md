@@ -99,7 +99,28 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [ ] Performance optimization
 - [ ] Security audit
 ## Getting Started
-[To be added: Installation and setup instructions]
+1. Clone the repository
+2. Install dependencies:
+```bash
+npm install
+```
+3. Set up environment variables:
+- Copy `.env.local.example` to `.env.local`
+- Fill in required API keys and credentials
+
+4. Run database migrations:
+```bash
+npx prisma migrate dev
+```
+
+5. Start the development server:
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+Note: Authentication is currently disabled in middleware.ts for testing purposes. Re-enable before deployment.
 ## Contributing
 [To be added: Contribution guidelines]
 ## License
