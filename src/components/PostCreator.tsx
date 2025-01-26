@@ -96,7 +96,7 @@ export function PostCreator({ selectedPlatforms, onPostCreate }: PostCreatorProp
   }, [content, hashtags, mentions, urls, threads, mediaFiles, scheduledTime, onPostCreate])
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg">
+    <div className="space-y-6 p-6 bg-white border border-gray-200 rounded-xl shadow-sm max-w-4xl mx-auto">
       {/* Content Editor */}
       <div className="relative">
         <div className="mb-2 flex gap-2">
@@ -109,7 +109,7 @@ export function PostCreator({ selectedPlatforms, onPostCreate }: PostCreatorProp
         <textarea
           value={content}
           onChange={(e) => handleContentChange(e.target.value)}
-          className="w-full h-40 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full h-40 p-4 border border-gray-200 rounded-lg resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
           placeholder="Write your post content..."
         />
         <div className="absolute bottom-4 right-4 space-y-1 text-right">
@@ -133,7 +133,7 @@ export function PostCreator({ selectedPlatforms, onPostCreate }: PostCreatorProp
       </div>
 
       {/* Schedule Post */}
-      <div className="border-t pt-4">
+      <div className="border-t border-gray-100 pt-6">
         <h3 className="text-sm font-medium text-gray-700 mb-2">Schedule Post</h3>
         <input
           type="datetime-local"
