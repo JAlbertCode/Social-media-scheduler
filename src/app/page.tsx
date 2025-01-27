@@ -1,66 +1,304 @@
 'use client'
 
-import Link from 'next/link'
+import NextLink from 'next/link'
+import {
+  Box,
+  SimpleGrid,
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Heading,
+  Text,
+  Button,
+  VStack,
+  HStack,
+  Icon,
+  Badge,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  Progress,
+  Divider,
+  Link,
+  useColorModeValue,
+} from '@chakra-ui/react'
+import {
+  FaPlus,
+  FaCalendarAlt,
+  FaClock,
+  FaTwitter,
+  FaLinkedin,
+  FaInstagram,
+  FaChartLine,
+  FaRegBell,
+} from 'react-icons/fa'
 
 export default function DashboardPage() {
-  return (
-    <div className="max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-          <div className="space-y-4">
-            <Link href="/compose" 
-              className="block w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 text-center">
-              Create New Post
-            </Link>
-            <Link href="/schedule"
-              className="block w-full py-2 px-4 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-center">
-              View Schedule
-            </Link>
-            <Link href="/queue"
-              className="block w-full py-2 px-4 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-center">
-              Manage Queue
-            </Link>
-          </div>
-        </div>
+  const cardBg = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
 
-        {/* Recent Activity */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-          <div className="space-y-4">
-            <div className="border-l-4 border-blue-500 pl-4">
-              <p className="text-sm text-gray-600">Post scheduled for Twitter</p>
-              <p className="text-xs text-gray-400">2 hours ago</p>
-            </div>
-            <div className="border-l-4 border-green-500 pl-4">
-              <p className="text-sm text-gray-600">Post published on LinkedIn</p>
-              <p className="text-xs text-gray-400">5 hours ago</p>
-            </div>
-          </div>
-        </div>
+  return (
+    <Box maxW="7xl" mx="auto" px={{ base: 4, sm: 6, lg: 8 }} py={6}>
+      <HStack mb={8} justify="space-between">
+        <Heading size="lg">Dashboard</Heading>
+        <NextLink href="/compose" passHref>
+          <Button
+            as="a"
+            colorScheme="brand"
+            leftIcon={<Icon as={FaPlus} />}
+          >
+            Create Post
+          </Button>
+        </NextLink>
+      </HStack>
+
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+        {/* Post Status */}
+        <Card bg={cardBg} borderWidth="1px" borderColor={borderColor}>
+          <CardHeader pb={0}>
+            <Heading size="md">Post Status</Heading>
+          </CardHeader>
+          <CardBody>
+            <SimpleGrid columns={2} spacing={4}>
+              <Stat>
+                <StatLabel>Scheduled</StatLabel>
+                <StatNumber>12</StatNumber>
+                <StatHelpText>For next 7 days</StatHelpText>
+              </Stat>
+              <Stat>
+                <StatLabel>Published</StatLabel>
+                <StatNumber>48</StatNumber>
+                <StatHelpText>This month</StatHelpText>
+              </Stat>
+            </SimpleGrid>
+            <Box mt={4}>
+              <Text fontSize="sm" mb={2}>Queue Status</Text>
+              <Progress value={60} size="sm" colorScheme="brand" rounded="full" />
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                12/20 slots used
+              </Text>
+            </Box>
+          </CardBody>
+          <CardFooter pt={0}>
+            <NextLink href="/queue" passHref>
+              <Button
+                as="a"
+                variant="ghost"
+                size="sm"
+                width="full"
+                leftIcon={<Icon as={FaClock} />}
+              >
+                View Queue
+              </Button>
+            </NextLink>
+          </CardFooter>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card bg={cardBg} borderWidth="1px" borderColor={borderColor}>
+          <CardHeader pb={0}>
+            <Heading size="md">Quick Actions</Heading>
+          </CardHeader>
+          <CardBody>
+            <VStack spacing={3}>
+              <NextLink href="/schedule" passHref style={{ width: '100%' }}>
+                <Button
+                  as="a"
+                  width="full"
+                  leftIcon={<Icon as={FaCalendarAlt} />}
+                  variant="outline"
+                >
+                  View Schedule
+                </Button>
+              </NextLink>
+              <NextLink href="/analytics" passHref style={{ width: '100%' }}>
+                <Button
+                  as="a"
+                  width="full"
+                  leftIcon={<Icon as={FaChartLine} />}
+                  variant="outline"
+                >
+                  Analytics
+                </Button>
+              </NextLink>
+              <NextLink href="/notifications" passHref style={{ width: '100%' }}>
+                <Button
+                  as="a"
+                  width="full"
+                  leftIcon={<Icon as={FaRegBell} />}
+                  variant="outline"
+                >
+                  Notifications
+                  <Badge ml={2} colorScheme="red" variant="solid" rounded="full">
+                    3
+                  </Badge>
+                </Button>
+              </NextLink>
+            </VStack>
+          </CardBody>
+        </Card>
 
         {/* Platform Status */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Platform Status</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span>Twitter</span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">Connected</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>LinkedIn</span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">Connected</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Instagram</span>
-              <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm">Not Connected</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <Card bg={cardBg} borderWidth="1px" borderColor={borderColor}>
+          <CardHeader pb={0}>
+            <Heading size="md">Platform Status</Heading>
+          </CardHeader>
+          <CardBody>
+            <VStack spacing={4} align="stretch">
+              <HStack justify="space-between">
+                <HStack>
+                  <Icon as={FaTwitter} color="twitter.500" boxSize={5} />
+                  <Text>Twitter</Text>
+                </HStack>
+                <Badge colorScheme="green">Connected</Badge>
+              </HStack>
+              <HStack justify="space-between">
+                <HStack>
+                  <Icon as={FaLinkedin} color="linkedin.500" boxSize={5} />
+                  <Text>LinkedIn</Text>
+                </HStack>
+                <Badge colorScheme="green">Connected</Badge>
+              </HStack>
+              <HStack justify="space-between">
+                <HStack>
+                  <Icon as={FaInstagram} color="pink.500" boxSize={5} />
+                  <Text>Instagram</Text>
+                </HStack>
+                <Badge colorScheme="gray">Not Connected</Badge>
+              </HStack>
+            </VStack>
+          </CardBody>
+          <Divider />
+          <CardFooter pt={4}>
+            <NextLink href="/settings/connections" passHref>
+              <Button
+                as="a"
+                size="sm"
+                width="full"
+                variant="ghost"
+              >
+                Manage Connections
+              </Button>
+            </NextLink>
+          </CardFooter>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card bg={cardBg} borderWidth="1px" borderColor={borderColor}>
+          <CardHeader pb={0}>
+            <Heading size="md">Recent Activity</Heading>
+          </CardHeader>
+          <CardBody>
+            <VStack spacing={4} align="stretch">
+              <Box borderLeftWidth="4px" borderLeftColor="brand.500" pl={4}>
+                <Text fontSize="sm">Post scheduled for Twitter</Text>
+                <Text fontSize="xs" color="gray.500">2 hours ago</Text>
+              </Box>
+              <Box borderLeftWidth="4px" borderLeftColor="green.500" pl={4}>
+                <Text fontSize="sm">Post published on LinkedIn</Text>
+                <Text fontSize="xs" color="gray.500">5 hours ago</Text>
+              </Box>
+              <Box borderLeftWidth="4px" borderLeftColor="yellow.500" pl={4}>
+                <Text fontSize="sm">Queue updated</Text>
+                <Text fontSize="xs" color="gray.500">Yesterday</Text>
+              </Box>
+            </VStack>
+          </CardBody>
+          <CardFooter pt={0}>
+            <Link
+              fontSize="sm"
+              color="brand.500"
+              _hover={{ textDecoration: 'none', color: 'brand.600' }}
+              width="full"
+              textAlign="center"
+            >
+              View All Activity
+            </Link>
+          </CardFooter>
+        </Card>
+
+        {/* Performance Overview */}
+        <Card bg={cardBg} borderWidth="1px" borderColor={borderColor}>
+          <CardHeader pb={0}>
+            <Heading size="md">Performance Overview</Heading>
+          </CardHeader>
+          <CardBody>
+            <SimpleGrid columns={2} spacing={4}>
+              <Stat>
+                <StatLabel>Engagement</StatLabel>
+                <StatNumber>1.2K</StatNumber>
+                <StatHelpText>
+                  ↑ 12% from last week
+                </StatHelpText>
+              </Stat>
+              <Stat>
+                <StatLabel>Reach</StatLabel>
+                <StatNumber>8.5K</StatNumber>
+                <StatHelpText>
+                  ↑ 23% from last week
+                </StatHelpText>
+              </Stat>
+            </SimpleGrid>
+          </CardBody>
+          <CardFooter pt={0}>
+            <NextLink href="/analytics" passHref>
+              <Button
+                as="a"
+                variant="ghost"
+                size="sm"
+                width="full"
+                leftIcon={<Icon as={FaChartLine} />}
+              >
+                View Analytics
+              </Button>
+            </NextLink>
+          </CardFooter>
+        </Card>
+
+        {/* Upcoming Posts */}
+        <Card bg={cardBg} borderWidth="1px" borderColor={borderColor}>
+          <CardHeader pb={0}>
+            <Heading size="md">Upcoming Posts</Heading>
+          </CardHeader>
+          <CardBody>
+            <VStack spacing={3} align="stretch">
+              <Box p={3} bg={useColorModeValue('gray.50', 'gray.700')} rounded="md">
+                <HStack justify="space-between" mb={1}>
+                  <Badge colorScheme="twitter">Twitter</Badge>
+                  <Text fontSize="xs" color="gray.500">Today, 3:00 PM</Text>
+                </HStack>
+                <Text fontSize="sm" noOfLines={2}>
+                  Exciting news! We're launching our new feature next week...
+                </Text>
+              </Box>
+              <Box p={3} bg={useColorModeValue('gray.50', 'gray.700')} rounded="md">
+                <HStack justify="space-between" mb={1}>
+                  <Badge colorScheme="linkedin">LinkedIn</Badge>
+                  <Text fontSize="xs" color="gray.500">Tomorrow, 10:00 AM</Text>
+                </HStack>
+                <Text fontSize="sm" noOfLines={2}>
+                  Join us for an exclusive webinar on social media strategies...
+                </Text>
+              </Box>
+            </VStack>
+          </CardBody>
+          <CardFooter pt={0}>
+            <NextLink href="/schedule" passHref>
+              <Button
+                as="a"
+                variant="ghost"
+                size="sm"
+                width="full"
+                leftIcon={<Icon as={FaCalendarAlt} />}
+              >
+                View Schedule
+              </Button>
+            </NextLink>
+          </CardFooter>
+        </Card>
+      </SimpleGrid>
+    </Box>
   )
 }
