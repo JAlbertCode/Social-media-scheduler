@@ -5,6 +5,18 @@ import { DndProvider, useDrop } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { ScheduledPost, DragItem } from '../types/calendar'
 import { DraggablePost } from './DraggablePost'
+import {
+  Box,
+  Grid,
+  Heading,
+  IconButton,
+  Text,
+  VStack,
+  useColorModeValue,
+  ButtonGroup,
+  useToken,
+} from '@chakra-ui/react'
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
 interface CalendarProps {
   posts: ScheduledPost[]
@@ -17,13 +29,15 @@ function CalendarDay({
   posts,
   isCurrentMonth,
   onDrop,
-  onClick
+  onClick,
+  isToday,
 }: { 
   date: Date
   posts: ScheduledPost[]
   isCurrentMonth: boolean
   onDrop: (item: DragItem) => void
   onClick: () => void
+  isToday: boolean
 }) {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'POST',
@@ -33,28 +47,52 @@ function CalendarDay({
     })
   }))
 
+  const bgColor = useColorModeValue('white', 'gray.800')
+  const hoverBg = useColorModeValue('gray.50', 'gray.700')
+  const dropBg = useColorModeValue('blue.50', 'blue.900')
+  const inactiveBg = useColorModeValue('gray.50', 'gray.900')
+  const todayBg = useColorModeValue('brand.50', 'brand.900')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
+
   return (
-    <div
+    <Box
       ref={drop}
       onClick={onClick}
-      className={`
-        min-h-24 p-2 bg-white cursor-pointer
-        ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''}
-        ${isOver ? 'bg-blue-50' : 'hover:bg-gray-50'}
-      `}
+      bg={
+        !isCurrentMonth ? inactiveBg :
+        isToday ? todayBg :
+        isOver ? dropBg :
+        bgColor
+      }
+      borderWidth="1px"
+      borderColor={borderColor}
+      minH="120px"
+      p={2}
+      cursor={isCurrentMonth ? 'pointer' : 'default'}
+      transition="all 0.2s"
+      _hover={isCurrentMonth ? { bg: hoverBg } : {}}
+      role="group"
     >
-      <div className="font-medium text-sm mb-1">
+      <Text
+        fontSize="sm"
+        fontWeight={isToday ? 'bold' : 'medium'}
+        color={isToday ? 'brand.500' : isCurrentMonth ? 'inherit' : 'gray.400'}
+        mb={1}
+      >
         {isCurrentMonth ? date.getDate() : ''}
-      </div>
-      {posts.map((post) => (
-        <DraggablePost key={post.id} post={post} />
-      ))}
-    </div>
+      </Text>
+      <VStack spacing={1} align="stretch">
+        {posts.map((post) => (
+          <DraggablePost key={post.id} post={post} />
+        ))}
+      </VStack>
+    </Box>
   )
 }
 
 export function Calendar({ posts, onSelectSlot, onMovePost }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
+  const today = new Date()
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
@@ -62,6 +100,12 @@ export function Calendar({ posts, onSelectSlot, onMovePost }: CalendarProps) {
 
   const getFirstDayOfMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+  }
+
+  const isToday = (date: Date) => {
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear()
   }
 
   const days = getDaysInMonth(currentDate)
@@ -80,37 +124,64 @@ export function Calendar({ posts, onSelectSlot, onMovePost }: CalendarProps) {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + increment))
   }
 
+  const headerBg = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const weekdayBg = useColorModeValue('gray.50', 'gray.900')
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="bg-white rounded-lg shadow">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <Box
+        bg={headerBg}
+        rounded="xl"
+        shadow="sm"
+        borderWidth="1px"
+        borderColor={borderColor}
+        overflow="hidden"
+      >
+        <Box
+          px={6}
+          py={4}
+          borderBottomWidth="1px"
+          borderColor={borderColor}
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Heading size="md" color={useColorModeValue('gray.900', 'white')}>
             {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-          </h2>
-          <div className="flex space-x-2">
-            <button
+          </Heading>
+          <ButtonGroup size="sm" spacing={2}>
+            <IconButton
+              aria-label="Previous month"
+              icon={<FaChevronLeft size="12px" />}
               onClick={() => changeMonth(-1)}
-              className="p-2 hover:bg-gray-100 rounded"
-            >
-              ←
-            </button>
-            <button
+              variant="ghost"
+            />
+            <IconButton
+              aria-label="Next month"
+              icon={<FaChevronRight size="12px" />}
               onClick={() => changeMonth(1)}
-              className="p-2 hover:bg-gray-100 rounded"
-            >
-              →
-            </button>
-          </div>
-        </div>
+              variant="ghost"
+            />
+          </ButtonGroup>
+        </Box>
 
-        <div className="grid grid-cols-7 gap-px bg-gray-200">
+        <Grid templateColumns="repeat(7, 1fr)">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div
+            <Box
               key={day}
-              className="bg-gray-50 py-2 text-center text-sm font-medium text-gray-500"
+              bg={weekdayBg}
+              py={2}
+              textAlign="center"
             >
-              {day}
-            </div>
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color={useColorModeValue('gray.600', 'gray.400')}
+              >
+                {day}
+              </Text>
+            </Box>
           ))}
 
           {Array.from({ length: 42 }, (_, i) => {
@@ -129,6 +200,7 @@ export function Calendar({ posts, onSelectSlot, onMovePost }: CalendarProps) {
                 date={date}
                 posts={dayPosts}
                 isCurrentMonth={isCurrentMonth}
+                isToday={isToday(date)}
                 onDrop={(item) => {
                   if (onMovePost && isCurrentMonth) {
                     onMovePost(item.id, date)
@@ -142,8 +214,8 @@ export function Calendar({ posts, onSelectSlot, onMovePost }: CalendarProps) {
               />
             )
           })}
-        </div>
-      </div>
+        </Grid>
+      </Box>
     </DndProvider>
   )
 }

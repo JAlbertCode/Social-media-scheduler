@@ -9,6 +9,21 @@ import {
   formatMention,
   getMentionRules
 } from '../utils/mentionSuggestions'
+import {
+  Box,
+  List,
+  ListItem,
+  Button,
+  Text,
+  Flex,
+  Icon,
+  Spinner,
+  Alert,
+  AlertIcon,
+  Badge,
+  Divider,
+} from '@chakra-ui/react'
+import { FaCheckCircle, FaAt } from 'react-icons/fa'
 
 interface MentionSuggestionsProps {
   content: string
@@ -38,7 +53,6 @@ export function MentionSuggestions({
         setLoading(true)
         setError(null)
 
-        // Get the word being typed
         const words = content.split(/\s+/)
         const currentWord = words[words.length - 1]
 
@@ -81,41 +95,81 @@ export function MentionSuggestions({
   } : {}
 
   return (
-    <div 
-      className="bg-white rounded-lg shadow-lg border border-gray-200 max-w-sm"
-      style={style}
+    <Box
+      bg="white"
+      rounded="lg"
+      shadow="lg"
+      borderWidth="1px"
+      borderColor="gray.200"
+      maxW="sm"
+      {...style}
     >
-      <div className="p-2">
+      <Box p={2}>
         {loading ? (
-          <div className="text-center py-2 text-gray-500">Loading...</div>
+          <Flex justify="center" align="center" py={2} color="gray.500">
+            <Spinner size="sm" mr={2} />
+            <Text>Loading suggestions...</Text>
+          </Flex>
         ) : error ? (
-          <div className="text-center py-2 text-red-500">{error}</div>
+          <Alert status="error" size="sm">
+            <AlertIcon />
+            {error}
+          </Alert>
         ) : (
-          <ul className="space-y-1">
+          <List spacing={1}>
             {suggestions.map((suggestion) => (
-              <li key={suggestion.id}>
-                <button
+              <ListItem key={suggestion.id}>
+                <Button
+                  variant="ghost"
+                  width="full"
+                  justifyContent="space-between"
                   onClick={() => handleSelect(suggestion)}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded flex items-center justify-between"
+                  py={2}
+                  px={3}
+                  height="auto"
+                  display="flex"
+                  alignItems="center"
                 >
-                  <div>
-                    <span className="font-medium">{suggestion.username}</span>
-                    <span className="text-gray-500 text-sm ml-2">
-                      {suggestion.displayName}
-                    </span>
-                  </div>
+                  <Flex align="center">
+                    <Icon as={FaAt} color="gray.400" boxSize={3} mr={2} />
+                    <Box textAlign="left">
+                      <Text fontWeight="medium" fontSize="sm">
+                        {suggestion.username}
+                      </Text>
+                      <Text color="gray.500" fontSize="xs">
+                        {suggestion.displayName}
+                      </Text>
+                    </Box>
+                  </Flex>
                   {suggestion.verified && (
-                    <span className="text-blue-500">✓</span>
+                    <Icon 
+                      as={FaCheckCircle} 
+                      color="brand.500" 
+                      boxSize={4} 
+                      ml={2}
+                    />
                   )}
-                </button>
-              </li>
+                </Button>
+              </ListItem>
             ))}
-          </ul>
+          </List>
         )}
-      </div>
-      <div className="border-t px-3 py-2 text-xs text-gray-500">
-        {getMentionRules(platform).maxMentions} mentions maximum
-      </div>
-    </div>
+      </Box>
+      <Divider />
+      <Flex 
+        px={3} 
+        py={2} 
+        justify="space-between" 
+        align="center"
+        bg="gray.50"
+      >
+        <Text fontSize="xs" color="gray.500">
+          Max {getMentionRules(platform).maxMentions} mentions
+        </Text>
+        <Badge colorScheme="brand" variant="subtle">
+          {platform}
+        </Badge>
+      </Flex>
+    </Box>
   )
 }

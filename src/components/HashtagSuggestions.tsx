@@ -8,6 +8,23 @@ import {
   validateHashtags,
   getRecommendedHashtagPosition
 } from '../utils/hashtagSuggestions'
+import {
+  VStack,
+  Box,
+  Text,
+  Button,
+  Tag,
+  TagLabel,
+  TagCloseButton,
+  Wrap,
+  WrapItem,
+  Alert,
+  AlertIcon,
+  Badge,
+  useColorModeValue,
+  Icon,
+} from '@chakra-ui/react'
+import { FaHashtag, FaTrendingUp } from 'react-icons/fa'
 
 interface HashtagSuggestionsProps {
   content: string
@@ -25,12 +42,11 @@ export function HashtagSuggestions({
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([])
   const [validation, setValidation] = useState<{ valid: boolean; message?: string }>({ valid: true })
 
+  const brandColor = useColorModeValue('brand.500', 'brand.400')
+
   useEffect(() => {
-    // Analyze content for relevant hashtag suggestions
     const suggestions = analyzeContentForHashtags(content, platform)
     setContentSuggestions(suggestions)
-
-    // Get trending hashtags
     const trending = getTrendingHashtags(platform)
     setTrendingSuggestions(trending)
   }, [content, platform])
@@ -46,70 +62,126 @@ export function HashtagSuggestions({
     setValidation(validationResult)
   }
 
+  const removeHashtag = (hashtagToRemove: string) => {
+    setSelectedHashtags(current => current.filter(tag => tag !== hashtagToRemove))
+  }
+
   const recommendedPosition = getRecommendedHashtagPosition(platform)
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-sm font-medium text-gray-700 mb-2">
-          Suggested Hashtags
-          <span className="ml-2 text-xs text-gray-500">
-            (Recommended position: {recommendedPosition})
-          </span>
-        </h3>
-        <div className="flex flex-wrap gap-2">
+    <VStack spacing={4} align="stretch">
+      {/* Recommended Position */}
+      <Badge 
+        colorScheme="brand" 
+        variant="subtle" 
+        alignSelf="start"
+        display="flex"
+        alignItems="center"
+        gap={1}
+      >
+        <Icon as={FaHashtag} boxSize="12px" />
+        <Text>Recommended position: {recommendedPosition}</Text>
+      </Badge>
+
+      {/* Suggested Hashtags */}
+      <Box>
+        <Text 
+          fontSize="sm" 
+          fontWeight="medium" 
+          color="gray.700" 
+          mb={2}
+          display="flex"
+          alignItems="center"
+          gap={2}
+        >
+          <Icon as={FaHashtag} color={brandColor} boxSize="12px" />
+          <span>Suggested Hashtags</span>
+        </Text>
+        <Wrap spacing={2}>
           {contentSuggestions.map((hashtag) => (
-            <button
-              key={hashtag}
-              onClick={() => handleHashtagClick(hashtag)}
-              className="px-3 py-1 text-sm bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100"
-            >
-              {hashtag}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-sm font-medium text-gray-700 mb-2">
-          Trending Hashtags
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {trendingSuggestions.map((hashtag) => (
-            <button
-              key={hashtag}
-              onClick={() => handleHashtagClick(hashtag)}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
-            >
-              {hashtag}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {!validation.valid && (
-        <p className="text-sm text-red-600">
-          {validation.message}
-        </p>
-      )}
-
-      {selectedHashtags.length > 0 && (
-        <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
-            Selected Hashtags
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {selectedHashtags.map((hashtag) => (
-              <span
-                key={hashtag}
-                className="px-3 py-1 text-sm bg-green-50 text-green-700 rounded-full"
+            <WrapItem key={hashtag}>
+              <Button
+                size="sm"
+                variant="ghost"
+                colorScheme="brand"
+                onClick={() => handleHashtagClick(hashtag)}
+                leftIcon={<Icon as={FaHashtag} boxSize="12px" />}
               >
-                {hashtag}
-              </span>
-            ))}
-          </div>
-        </div>
+                {hashtag.replace('#', '')}
+              </Button>
+            </WrapItem>
+          ))}
+        </Wrap>
+      </Box>
+
+      {/* Trending Hashtags */}
+      <Box>
+        <Text 
+          fontSize="sm" 
+          fontWeight="medium" 
+          color="gray.700" 
+          mb={2}
+          display="flex"
+          alignItems="center"
+          gap={2}
+        >
+          <Icon as={FaTrendingUp} color={brandColor} boxSize="12px" />
+          <span>Trending Hashtags</span>
+        </Text>
+        <Wrap spacing={2}>
+          {trendingSuggestions.map((hashtag) => (
+            <WrapItem key={hashtag}>
+              <Button
+                size="sm"
+                variant="outline"
+                colorScheme="gray"
+                onClick={() => handleHashtagClick(hashtag)}
+                leftIcon={<Icon as={FaHashtag} boxSize="12px" />}
+              >
+                {hashtag.replace('#', '')}
+              </Button>
+            </WrapItem>
+          ))}
+        </Wrap>
+      </Box>
+
+      {/* Validation Error */}
+      {!validation.valid && (
+        <Alert status="error" size="sm" rounded="md">
+          <AlertIcon />
+          {validation.message}
+        </Alert>
       )}
-    </div>
+
+      {/* Selected Hashtags */}
+      {selectedHashtags.length > 0 && (
+        <Box>
+          <Text 
+            fontSize="sm" 
+            fontWeight="medium" 
+            color="gray.700" 
+            mb={2}
+          >
+            Selected Hashtags
+          </Text>
+          <Wrap spacing={2}>
+            {selectedHashtags.map((hashtag) => (
+              <WrapItem key={hashtag}>
+                <Tag
+                  size="md"
+                  variant="subtle"
+                  colorScheme="brand"
+                >
+                  <TagLabel>{hashtag}</TagLabel>
+                  <TagCloseButton 
+                    onClick={() => removeHashtag(hashtag)}
+                  />
+                </Tag>
+              </WrapItem>
+            ))}
+          </Wrap>
+        </Box>
+      )}
+    </VStack>
   )
 }
