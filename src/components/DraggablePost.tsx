@@ -8,17 +8,19 @@ import {
   HStack,
   Tag,
   useColorModeValue,
-  Tooltip,
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
 import { PostPreviewPopover } from './PostPreviewPopover'
+import { ConflictIndicator } from './ConflictIndicator'
+import { detectConflicts } from '../utils/postValidation'
 
 interface DraggablePostProps {
   post: ScheduledPost
+  allPosts: ScheduledPost[]
 }
 
-export function DraggablePost({ post }: DraggablePostProps) {
+export function DraggablePost({ post, allPosts }: DraggablePostProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'POST',
     item: {
@@ -36,6 +38,8 @@ export function DraggablePost({ post }: DraggablePostProps) {
   const tagBg = useColorModeValue('brand.100', 'brand.800')
   const time = format(new Date(post.scheduledTime), 'HH:mm')
 
+  const conflictResult = detectConflicts(post, allPosts)
+
   return (
     <PostPreviewPopover post={post}>
       <Box
@@ -51,7 +55,14 @@ export function DraggablePost({ post }: DraggablePostProps) {
         _hover={{ bg: useColorModeValue('brand.100', 'brand.800') }}
         borderWidth="1px"
         borderColor={useColorModeValue('brand.100', 'brand.700')}
+        position="relative"
       >
+        {conflictResult.hasConflict && conflictResult.type && (
+          <ConflictIndicator
+            type={conflictResult.type}
+            conflicts={conflictResult.conflicts || []}
+          />
+        )}
         <HStack justify="space-between" mb={1}>
           <Text noOfLines={1} flex={1}>
             {post.content}

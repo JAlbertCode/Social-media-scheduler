@@ -128,7 +128,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [x] Post preview on hover
   - [x] Drag and drop scheduling
   - [ ] Advanced Calendar Features
-    - [ ] Visual conflict indicators
+    - [x] Visual conflict indicators
     - [ ] Timezone overlay
     - [ ] Schedule gaps analysis
     - [ ] Platform-specific view filters

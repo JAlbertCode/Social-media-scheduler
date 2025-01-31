@@ -14,14 +14,17 @@ import {
   VStack,
   useColorModeValue,
   ButtonGroup,
-  useToken,
 } from '@chakra-ui/react'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
-interface CalendarProps {
+interface CalendarDayProps {
+  date: Date
   posts: ScheduledPost[]
-  onSelectSlot?: (date: Date) => void
-  onMovePost?: (postId: string, newDate: Date) => void
+  isCurrentMonth: boolean
+  onDrop: (item: DragItem) => void
+  onClick: () => void
+  isToday: boolean
+  allPosts: ScheduledPost[]
 }
 
 function CalendarDay({ 
@@ -31,14 +34,8 @@ function CalendarDay({
   onDrop,
   onClick,
   isToday,
-}: { 
-  date: Date
-  posts: ScheduledPost[]
-  isCurrentMonth: boolean
-  onDrop: (item: DragItem) => void
-  onClick: () => void
-  isToday: boolean
-}) {
+  allPosts,
+}: CalendarDayProps) {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'POST',
     drop: (item: DragItem) => onDrop(item),
@@ -83,11 +80,17 @@ function CalendarDay({
       </Text>
       <VStack spacing={1} align="stretch">
         {posts.map((post) => (
-          <DraggablePost key={post.id} post={post} />
+          <DraggablePost key={post.id} post={post} allPosts={allPosts} />
         ))}
       </VStack>
     </Box>
   )
+}
+
+interface CalendarProps {
+  posts: ScheduledPost[]
+  onSelectSlot?: (date: Date) => void
+  onMovePost?: (postId: string, newDate: Date) => void
 }
 
 export function Calendar({ posts, onSelectSlot, onMovePost }: CalendarProps) {
@@ -211,6 +214,7 @@ export function Calendar({ posts, onSelectSlot, onMovePost }: CalendarProps) {
                     onSelectSlot(date)
                   }
                 }}
+                allPosts={posts}
               />
             )
           })}
