@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Box,
@@ -41,7 +42,13 @@ interface NavItemProps {
 
 function NavItem({ href, isActive, icon: Icon, children }: NavItemProps) {
   return (
-    <Link href={href} style={{ textDecoration: 'none', display: 'block', width: '100%' }}>
+    <NextLink href={href} passHref>
+      <Box
+        display="block"
+        width="100%"
+        textDecoration="none"
+        _hover={{ textDecoration: 'none' }}
+      >
       <Box
         px={3}
         py={2}
@@ -60,7 +67,8 @@ function NavItem({ href, isActive, icon: Icon, children }: NavItemProps) {
           <Text>{children}</Text>
         </HStack>
       </Box>
-    </Link>
+      </Box>
+    </NextLink>
   )
 }
 
@@ -82,7 +90,13 @@ export function Navigation() {
     >
       <VStack h="full" py={5} px={3} spacing={6}>
         {/* Logo */}
-        <Link href="/" style={{ textDecoration: 'none', padding: '0 12px', width: '100%' }}>
+        <NextLink href="/" passHref>
+          <Box
+            width="100%"
+            px={3}
+            textDecoration="none"
+            _hover={{ textDecoration: 'none' }}
+          >
           <HStack spacing={3}>
             <Box bg="brand.500" w="8" h="8" rounded="lg" display="flex" alignItems="center" justifyContent="center">
               <Text color="white" fontWeight="bold">S</Text>
@@ -91,7 +105,8 @@ export function Navigation() {
               Scheduler
             </Text>
           </HStack>
-        </Link>
+          </Box>
+        </NextLink>
 
         {/* Primary Navigation */}
         <VStack spacing={1} align="stretch" width="full">

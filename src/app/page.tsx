@@ -45,9 +45,9 @@ export default function DashboardPage() {
         <Heading size="lg">Dashboard</Heading>
         <NextLink href="/compose" passHref>
           <Button
-            as="a"
             colorScheme="brand"
             leftIcon={<Icon as={FaPlus} />}
+            w="full"
           >
             Create Post
           </Button>
@@ -84,7 +84,6 @@ export default function DashboardPage() {
           <CardFooter pt={0}>
             <NextLink href="/queue" passHref>
               <Button
-                as="a"
                 variant="ghost"
                 size="sm"
                 width="full"
@@ -105,7 +104,6 @@ export default function DashboardPage() {
             <VStack spacing={3}>
               <NextLink href="/schedule" passHref style={{ width: '100%' }}>
                 <Button
-                  as="a"
                   width="full"
                   leftIcon={<Icon as={FaCalendarAlt} />}
                   variant="outline"
@@ -115,7 +113,6 @@ export default function DashboardPage() {
               </NextLink>
               <NextLink href="/analytics" passHref style={{ width: '100%' }}>
                 <Button
-                  as="a"
                   width="full"
                   leftIcon={<Icon as={FaChartLine} />}
                   variant="outline"
@@ -125,7 +122,6 @@ export default function DashboardPage() {
               </NextLink>
               <NextLink href="/notifications" passHref style={{ width: '100%' }}>
                 <Button
-                  as="a"
                   width="full"
                   leftIcon={<Icon as={FaRegBell} />}
                   variant="outline"
@@ -174,7 +170,6 @@ export default function DashboardPage() {
           <CardFooter pt={4}>
             <NextLink href="/settings/connections" passHref>
               <Button
-                as="a"
                 size="sm"
                 width="full"
                 variant="ghost"
@@ -245,7 +240,6 @@ export default function DashboardPage() {
           <CardFooter pt={0}>
             <NextLink href="/analytics" passHref>
               <Button
-                as="a"
                 variant="ghost"
                 size="sm"
                 width="full"
@@ -287,7 +281,6 @@ export default function DashboardPage() {
           <CardFooter pt={0}>
             <NextLink href="/schedule" passHref>
               <Button
-                as="a"
                 variant="ghost"
                 size="sm"
                 width="full"

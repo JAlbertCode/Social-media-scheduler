@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Box, Flex, Center, Text, Button, Image } from '@chakra-ui/react'
 import { PlatformType } from './PostCreator'
 import { PlatformFactory } from '@/lib/platforms'
 
@@ -56,75 +57,75 @@ export function PlatformConnection({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+    <Box bg="white" rounded="lg" shadow="sm" borderWidth="1px" p={4}>
+      <Flex alignItems="center" justifyContent="space-between">
+        <Flex alignItems="center" gap={4}>
           {/* Platform Icon */}
-          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+          <Center w="12" h="12" rounded="full" bg="gray.100">
             {platform.charAt(0)}
-          </div>
+          </Center>
 
           {/* Platform Info */}
-          <div>
-            <h3 className="font-medium">{platform}</h3>
+          <Box>
+            <Text fontWeight="medium">{platform}</Text>
             {isConnected && profileData && (
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <Flex alignItems="center" gap={2} fontSize="sm" color="gray.600">
                 {profileData.profileImage && (
-                  <img 
+                  <Image 
                     src={profileData.profileImage}
                     alt={profileData.username}
-                    className="w-4 h-4 rounded-full"
+                    boxSize="4" rounded="full"
                   />
                 )}
-                <span>{profileData.displayName || profileData.username}</span>
-              </div>
+                <Text>{profileData.displayName || profileData.username}</Text>
+              </Flex>
             )}
-          </div>
-        </div>
+          </Box>
+        </Flex>
 
         {/* Connection Status & Actions */}
-        <div>
+        <Box>
           {isConnected ? (
-            <button
+            <Button
               onClick={handleDisconnect}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
+              colorScheme="red" variant="ghost" size="sm"
             >
               {isLoading ? 'Disconnecting...' : 'Disconnect'}
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               onClick={handleConnect}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50"
+              colorScheme="blue" size="sm"
             >
               {isLoading ? 'Connecting...' : 'Connect'}
-            </button>
+            </Button>
           )}
-        </div>
-      </div>
+        </Box>
+      </Flex>
 
       {/* Error Message */}
       {error && (
-        <div className="mt-2 text-sm text-red-600">
+        <Text mt={2} fontSize="sm" color="red.600">
           {error}
-        </div>
+        </Text>
       )}
 
       {/* Platform Status */}
-      <div className="mt-4 text-sm text-gray-500">
+      <Box mt={4} fontSize="sm" color="gray.500">
         {isConnected ? (
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            <span>Connected and ready to post</span>
-          </div>
+          <Flex alignItems="center" gap={2}>
+            <Box w={2} h={2} bg="green.500" rounded="full"></Box>
+            <Text>Connected and ready to post</Text>
+          </Flex>
         ) : (
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 bg-gray-300 rounded-full"></span>
-            <span>Not connected</span>
-          </div>
+          <Flex alignItems="center" gap={2}>
+            <Box w={2} h={2} bg="gray.300" rounded="full"></Box>
+            <Text>Not connected</Text>
+          </Flex>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }
