@@ -11,6 +11,10 @@ interface TimezoneSelectProps {
 export function TimezoneSelect({ value, onChange }: TimezoneSelectProps) {
   const groupedTimezones = getGroupedTimezones()
 
+  if (!value) {
+    return null;
+  }
+
   return (
     <select
       value={value}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Calendar } from '../../components/Calendar'
 import { Timeline } from '../../components/Timeline'
 import { TimezoneSelect } from '../../components/TimezoneSelect'
@@ -15,7 +15,11 @@ type ViewMode = 'calendar' | 'timeline'
 export default function SchedulePage() {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar')
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [timezone, setTimezone] = useState(getUserTimezone())
+  const [timezone, setTimezone] = useState<string>('')
+
+  useEffect(() => {
+    setTimezone(getUserTimezone())
+  }, [])
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformType>('Twitter')
   const [isFrequencyPanelOpen, setIsFrequencyPanelOpen] = useState(true)
   
@@ -51,6 +55,10 @@ export default function SchedulePage() {
     return scheduledPosts
       .filter(post => post.platforms.includes(platform))
       .map(post => new Date(post.scheduledTime))
+  }
+
+  if (!timezone) {
+    return null; // or a loading spinner
   }
 
   return (

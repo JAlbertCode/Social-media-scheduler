@@ -5,6 +5,7 @@ import { InstagramPlatform } from './instagram'
 import { TikTokPlatform } from './tiktok'
 import { YouTubePlatform } from './youtube'
 import { ThreadsPlatform } from './threads'
+import { BlueskyPlatform } from './bluesky'
 import { SocialPlatform } from './types'
 
 export class PlatformFactory {
@@ -17,6 +18,9 @@ export class PlatformFactory {
           this.instances.set(type, new TwitterPlatform())
           case 'Threads':
           this.instances.set(type, new ThreadsPlatform())
+          break
+        case 'Bluesky':
+          this.instances.set(type, new BlueskyPlatform())
           break
         case 'LinkedIn':
           this.instances.set(type, new LinkedInPlatform())
@@ -52,6 +56,6 @@ export class PlatformFactory {
   }
 
   static isImplemented(type: PlatformType): boolean {
-    return ['Twitter', 'LinkedIn', 'Instagram', 'TikTok', 'YouTube'].includes(type)
+    return ['Twitter', 'LinkedIn', 'Instagram', 'TikTok', 'YouTube', 'Bluesky'].includes(type)
   }
 }

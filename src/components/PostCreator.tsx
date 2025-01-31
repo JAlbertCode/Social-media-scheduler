@@ -9,6 +9,7 @@ export type PlatformType =
   | 'TIKTOK'
   | 'LINKEDIN'
   | 'YOUTUBE_SHORTS'
+  | 'BLUESKY'
 export type ContentType = 'feed' | 'story' | 'reels'
 
 // Platform character limits
@@ -18,6 +19,7 @@ const PLATFORM_LIMITS: Record<PlatformType, number> = {
   TIKTOK: 2200,
   LINKEDIN: 3000,
   YOUTUBE_SHORTS: 1000,
+  BLUESKY: 300,
 }
 
 interface MediaFile {

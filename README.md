@@ -10,7 +10,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [x] YouTube
   - [x] LinkedIn
   - [x] Threads
-  - [ ] Bluesky
+  - [x] Bluesky
   - [ ] Mastodon
 ### Content Management
 - [x] Media Upload System
@@ -98,6 +98,47 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [ ] Integration testing
 - [ ] Performance optimization
 - [ ] Security audit
+### User Interface
+- [x] Navigation
+  - [x] Responsive sidebar/header navigation
+  - [x] Mobile menu
+  - [x] Active state indicators
+  - [x] Platform connection status indicators
+- [ ] Dashboard
+  - [ ] Post analytics cards
+  - [ ] Quick post creation
+  - [ ] Recent activity feed
+  - [ ] Platform status overview
+- [ ] Post Creation
+  - [ ] Rich text editor with markdown support
+  - [ ] Platform-specific preview cards
+  - [ ] Character count indicators
+  - [ ] Media upload with preview
+  - [ ] Hashtag suggestions
+  - [ ] Scheduling interface
+- [ ] Queue Management
+  - [ ] Drag and drop interface
+  - [ ] Post status indicators
+  - [ ] Edit/Delete capabilities
+  - [ ] Filter by platform
+  - [ ] Sort by date/status
+- [ ] Calendar View
+  - [ ] Month/Week/Day views
+  - [ ] Color coding by platform
+  - [ ] Post preview on hover
+  - [ ] Drag and drop scheduling
+  - [ ] Advanced Calendar Features
+    - [ ] Visual conflict indicators
+    - [ ] Timezone overlay
+    - [ ] Schedule gaps analysis
+    - [ ] Platform-specific view filters
+    - [ ] Multiple calendar support
+    - [ ] Calendar sharing/collaboration
+    - [ ] Event/holiday integration
+    - [ ] Custom view layouts
+    - [ ] Performance optimization for large schedules
+    - [ ] Undo/redo schedule changes
+
 ## Getting Started
 1. Clone the repository
 2. Install dependencies:
