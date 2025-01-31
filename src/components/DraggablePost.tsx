@@ -12,6 +12,8 @@ import {
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
+import { PostPreviewPopover } from './PostPreviewPopover'
+
 interface DraggablePostProps {
   post: ScheduledPost
 }
@@ -35,7 +37,7 @@ export function DraggablePost({ post }: DraggablePostProps) {
   const time = format(new Date(post.scheduledTime), 'HH:mm')
 
   return (
-    <Tooltip label={post.content} placement="top">
+    <PostPreviewPopover post={post}>
       <Box
         ref={drag}
         opacity={isDragging ? 0.5 : 1}
@@ -74,6 +76,6 @@ export function DraggablePost({ post }: DraggablePostProps) {
           ))}
         </HStack>
       </Box>
-    </Tooltip>
+    </PostPreviewPopover>
   )
 }

@@ -123,10 +123,10 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [ ] Filter by platform
   - [ ] Sort by date/status
 - [ ] Calendar View
-  - [ ] Month/Week/Day views
-  - [ ] Color coding by platform
-  - [ ] Post preview on hover
-  - [ ] Drag and drop scheduling
+  - [x] Month/Week/Day views
+  - [x] Color coding by platform
+  - [x] Post preview on hover
+  - [x] Drag and drop scheduling
   - [ ] Advanced Calendar Features
     - [ ] Visual conflict indicators
     - [ ] Timezone overlay
