@@ -141,6 +141,8 @@ export default function SchedulePage() {
                 setSelectedDate(date)
                 setViewMode('timeline')
               }}
+              localTimezone={timezone}
+              targetTimezones={["America/New_York", "Europe/London", "Asia/Tokyo"]}
             />
           ) : (
             <Timeline

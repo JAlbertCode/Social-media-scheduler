@@ -129,7 +129,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [x] Drag and drop scheduling
   - [ ] Advanced Calendar Features
     - [x] Visual conflict indicators
-    - [ ] Timezone overlay
+    - [x] Timezone overlay
     - [ ] Schedule gaps analysis
     - [ ] Platform-specific view filters
     - [ ] Multiple calendar support

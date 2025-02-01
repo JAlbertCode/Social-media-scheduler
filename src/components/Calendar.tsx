@@ -5,6 +5,7 @@ import { DndProvider, useDrop } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { ScheduledPost, DragItem } from '../types/calendar'
 import { DraggablePost } from './DraggablePost'
+import { TimezoneOverlay } from './TimezoneOverlay'
 import {
   Box,
   Grid,
@@ -25,6 +26,8 @@ interface CalendarDayProps {
   onClick: () => void
   isToday: boolean
   allPosts: ScheduledPost[]
+  localTimezone: string
+  targetTimezones?: string[]
 }
 
 function CalendarDay({ 
@@ -35,6 +38,8 @@ function CalendarDay({
   onClick,
   isToday,
   allPosts,
+  localTimezone,
+  targetTimezones,
 }: CalendarDayProps) {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'POST',
@@ -75,9 +80,16 @@ function CalendarDay({
         fontWeight={isToday ? 'bold' : 'medium'}
         color={isToday ? 'brand.500' : isCurrentMonth ? 'inherit' : 'gray.400'}
         mb={1}
-      >
-        {isCurrentMonth ? date.getDate() : ''}
-      </Text>
+        >
+        {isCurrentMonth && (
+            <TimezoneOverlay
+          date={date}
+          localTimezone={localTimezone}
+          targetTimezones={targetTimezones}
+        />
+      )}
+      {isCurrentMonth ? date.getDate() : ''}
+    </Text>
       <VStack spacing={1} align="stretch">
         {posts.map((post) => (
           <DraggablePost key={post.id} post={post} allPosts={allPosts} />
@@ -91,9 +103,11 @@ interface CalendarProps {
   posts: ScheduledPost[]
   onSelectSlot?: (date: Date) => void
   onMovePost?: (postId: string, newDate: Date) => void
+  localTimezone: string
+  targetTimezones?: string[]
 }
 
-export function Calendar({ posts, onSelectSlot, onMovePost }: CalendarProps) {
+export function Calendar({ posts, onSelectSlot, onMovePost, localTimezone, targetTimezones }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const today = new Date()
 
