@@ -26,13 +26,15 @@ interface TimezoneOverlayProps {
 
 export function TimezoneOverlay({ date, localTimezone, targetTimezones }: TimezoneOverlayProps) {
   const getAllTimezones = () => {
+    if (!localTimezone) return [];
+    
     const timezoneTimes = [
       {
         zone: localTimezone,
         isLocal: true,
         time: date
       },
-      ...(targetTimezones || []).map(zone => ({
+      ...(targetTimezones || []).filter(zone => zone).map(zone => ({
         zone,
         isLocal: false,
         time: utcToZonedTime(date, zone)
@@ -53,6 +55,9 @@ export function TimezoneOverlay({ date, localTimezone, targetTimezones }: Timezo
   const badgeBg = useColorModeValue('brand.100', 'brand.800')
   const badgeColor = useColorModeValue('brand.700', 'brand.200')
 
+  const timezones = getAllTimezones();
+  if (timezones.length === 0) return null;
+
   return (
     <Popover trigger="hover" placement="right">
       <PopoverTrigger>
@@ -72,7 +77,7 @@ export function TimezoneOverlay({ date, localTimezone, targetTimezones }: Timezo
             <Text fontSize="sm" fontWeight="medium" mb={1}>
               Time Across Zones
             </Text>
-            {getAllTimezones().map(({ zone, isLocal, time }) => (
+            {timezones.map(({ zone, isLocal, time }) => (
               <Box
                 key={zone}
                 p={2}
@@ -84,7 +89,7 @@ export function TimezoneOverlay({ date, localTimezone, targetTimezones }: Timezo
                 <HStack justify="space-between">
                   <VStack align="start" spacing={0}>
                     <Text fontSize="sm" fontWeight={isLocal ? "medium" : "normal"}>
-                      {zone.replace('_', ' ')}
+                      {zone?.replace('_', ' ') || 'Unknown Timezone'}
                     </Text>
                     <Text fontSize="xs" color={textColor}>
                       {format(time, 'h:mm a')}
