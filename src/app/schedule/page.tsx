@@ -8,8 +8,9 @@ import { TimezoneSelect } from '../../components/TimezoneSelect'
 import { FrequencyRecommendations } from '../../components/FrequencyRecommendations'
 import { QueueManagerContainer } from '../../components/QueueManagerContainer'
 import { ScheduleGapAnalysis } from '../../components/ScheduleGapAnalysis'
-import { PlatformFilters } from '../../components/PlatformFilters'
+import { CalendarManager } from '../../components/CalendarManager'
 import { ScheduledPost } from '../../types/calendar'
+import { CalendarConfig } from '../../types/calendars'
 import { getUserTimezone, fromUTC, toUTC } from '../../utils/timezone'
 import { PlatformType } from '../../components/PostCreator'
 
@@ -22,6 +23,27 @@ export default function SchedulePage() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformType[]>(['Twitter', 'LinkedIn', 'Instagram'])
   const [activeFilter, setActiveFilter] = useState<PlatformType>('Twitter')
   const [isFrequencyPanelOpen, setIsFrequencyPanelOpen] = useState(true)
+  const [calendars, setCalendars] = useState<CalendarConfig[]>([
+    {
+      id: '1',
+      name: 'Main Campaign',
+      color: '#3182CE',
+      type: 'campaign',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: '2',
+      name: 'Product Launch',
+      color: '#38A169',
+      type: 'product',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ])
+  const [activeCalendars, setActiveCalendars] = useState<string[]>(['1', '2'])
 
   useEffect(() => {
     setTimezone(getUserTimezone())
@@ -42,6 +64,42 @@ export default function SchedulePage() {
       scheduledTime: new Date(Date.now() + 1000 * 60 * 60 * 4), // 4 hours from now
     }
   ])
+
+  const handleToggleCalendar = (calendarId: string) => {
+    setActiveCalendars(prev =>
+      prev.includes(calendarId)
+        ? prev.filter(id => id !== calendarId)
+        : [...prev, calendarId]
+    )
+  }
+
+  const handleAddCalendar = (calendar: Omit<CalendarConfig, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newCalendar: CalendarConfig = {
+      ...calendar,
+      id: Math.random().toString(36).substr(2, 9),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    setCalendars(prev => [...prev, newCalendar])
+    setActiveCalendars(prev => [...prev, newCalendar.id])
+  }
+
+  const handleEditCalendar = (calendar: CalendarConfig) => {
+    setCalendars(prev =>
+      prev.map(cal => cal.id === calendar.id ? calendar : cal)
+    )
+  }
+
+  const handleDeleteCalendar = (calendarId: string) => {
+    setCalendars(prev => prev.filter(cal => cal.id !== calendarId))
+    setActiveCalendars(prev => prev.filter(id => id !== calendarId))
+  }
+
+  const getFilteredPostsByCalendar = () => {
+    // In a real app, posts would have calendarIds
+    // For now, we'll just return all posts if any calendar is active
+    return activeCalendars.length > 0 ? scheduledPosts : []
+  }
 
   const getPostCounts = () => {
     const counts: Record<PlatformType, number> = {
@@ -68,14 +126,6 @@ export default function SchedulePage() {
     if (selectedPlatforms.length === 0) return scheduledPosts
     return scheduledPosts.filter(post =>
       post.platforms.some(platform => selectedPlatforms.includes(platform))
-    )
-  }
-
-  const handlePlatformToggle = (platform: PlatformType) => {
-    setSelectedPlatforms(current =>
-      current.includes(platform)
-        ? current.filter(p => p !== platform)
-        : [...current, platform]
     )
   }
 
@@ -173,14 +223,9 @@ export default function SchedulePage() {
             ? 'flex-1 overflow-auto px-4 pr-[350px]'
             : 'flex-1 overflow-auto px-4'
         }>
-          <PlatformFilters
-            selectedPlatforms={selectedPlatforms}
-            onPlatformToggle={handlePlatformToggle}
-            postCounts={getPostCounts()}
-          />
           {viewMode === 'calendar' ? (
             <Calendar
-              posts={getPostsInTimezone(getFilteredPosts())}
+              posts={getPostsInTimezone(getFilteredPostsByCalendar())}
               onMovePost={handleMovePost}
               onSelectSlot={(date) => {
                 setSelectedDate(date)
@@ -216,6 +261,15 @@ export default function SchedulePage() {
                 date={selectedDate}
                 recommendedMaxGap={8}
                 recommendedMinGap={2}
+              />
+
+              <CalendarManager
+                calendars={calendars}
+                activeCalendars={activeCalendars}
+                onToggleCalendar={handleToggleCalendar}
+                onAddCalendar={handleAddCalendar}
+                onEditCalendar={handleEditCalendar}
+                onDeleteCalendar={handleDeleteCalendar}
               />
             </VStack>
           </div>
