@@ -131,10 +131,10 @@ A comprehensive social media scheduling platform that allows seamless content ma
     - [x] Visual conflict indicators
     - [x] Timezone overlay
     - [x] Schedule gaps analysis
-    - [ ] Platform-specific view filters
+    - [x] Platform-specific view filters
     - [ ] Multiple calendar support
     - [ ] Calendar sharing/collaboration
-    - [ ] Event/holiday integration
+    - [x] Event/holiday integration
     - [ ] Custom view layouts
     - [ ] Performance optimization for large schedules
     - [ ] Undo/redo schedule changes

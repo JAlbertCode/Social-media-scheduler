@@ -5,7 +5,8 @@ import { DndProvider, useDrop } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { ScheduledPost, DragItem } from '../types/calendar'
 import { DraggablePost } from './DraggablePost'
-import { TimezoneOverlay } from './TimezoneOverlay'
+import { BusinessEventOverlay } from './BusinessEventOverlay'
+import { getBusinessEvents, BusinessEvent } from '../utils/businessEvents'
 import {
   Box,
   Grid,
@@ -17,6 +18,7 @@ import {
   ButtonGroup,
 } from '@chakra-ui/react'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { startOfDay, endOfDay } from 'date-fns'
 
 interface CalendarDayProps {
   date: Date
@@ -28,6 +30,7 @@ interface CalendarDayProps {
   allPosts: ScheduledPost[]
   localTimezone: string
   targetTimezones?: string[]
+  businessEvents: BusinessEvent[]
 }
 
 function CalendarDay({ 
@@ -40,6 +43,7 @@ function CalendarDay({
   allPosts,
   localTimezone,
   targetTimezones,
+  businessEvents,
 }: CalendarDayProps) {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'POST',
@@ -74,22 +78,19 @@ function CalendarDay({
       transition="all 0.2s"
       _hover={isCurrentMonth ? { bg: hoverBg } : {}}
       role="group"
+      position="relative"
     >
+      {isCurrentMonth && businessEvents.length > 0 && (
+        <BusinessEventOverlay events={businessEvents} />
+      )}
       <Text
         fontSize="sm"
         fontWeight={isToday ? 'bold' : 'medium'}
         color={isToday ? 'brand.500' : isCurrentMonth ? 'inherit' : 'gray.400'}
         mb={1}
-        >
-        {isCurrentMonth && (
-            <TimezoneOverlay
-          date={date}
-          localTimezone={localTimezone}
-          targetTimezones={targetTimezones}
-        />
-      )}
-      {isCurrentMonth ? date.getDate() : ''}
-    </Text>
+      >
+        {isCurrentMonth ? date.getDate() : ''}
+      </Text>
       <VStack spacing={1} align="stretch">
         {posts.map((post) => (
           <DraggablePost key={post.id} post={post} allPosts={allPosts} />
@@ -229,6 +230,13 @@ export function Calendar({ posts, onSelectSlot, onMovePost, localTimezone, targe
                   }
                 }}
                 allPosts={posts}
+                localTimezone={localTimezone}
+                targetTimezones={targetTimezones}
+                businessEvents={
+                  isCurrentMonth 
+                    ? getBusinessEvents(startOfDay(date), endOfDay(date)) 
+                    : []
+                }
               />
             )
           })}

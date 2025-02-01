@@ -8,6 +8,7 @@ import { TimezoneSelect } from '../../components/TimezoneSelect'
 import { FrequencyRecommendations } from '../../components/FrequencyRecommendations'
 import { QueueManagerContainer } from '../../components/QueueManagerContainer'
 import { ScheduleGapAnalysis } from '../../components/ScheduleGapAnalysis'
+import { PlatformFilters } from '../../components/PlatformFilters'
 import { ScheduledPost } from '../../types/calendar'
 import { getUserTimezone, fromUTC, toUTC } from '../../utils/timezone'
 import { PlatformType } from '../../components/PostCreator'
@@ -18,7 +19,8 @@ export default function SchedulePage() {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar')
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [timezone, setTimezone] = useState<string>('')
-  const [selectedPlatform, setSelectedPlatform] = useState<PlatformType>('Twitter')
+  const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformType[]>(['Twitter', 'LinkedIn', 'Instagram'])
+  const [activeFilter, setActiveFilter] = useState<PlatformType>('Twitter')
   const [isFrequencyPanelOpen, setIsFrequencyPanelOpen] = useState(true)
 
   useEffect(() => {
@@ -40,6 +42,42 @@ export default function SchedulePage() {
       scheduledTime: new Date(Date.now() + 1000 * 60 * 60 * 4), // 4 hours from now
     }
   ])
+
+  const getPostCounts = () => {
+    const counts: Record<PlatformType, number> = {
+      Twitter: 0,
+      LinkedIn: 0,
+      Instagram: 0,
+      TikTok: 0,
+      YouTube: 0,
+      Bluesky: 0,
+    }
+
+    scheduledPosts.forEach(post => {
+      post.platforms.forEach(platform => {
+        if (counts[platform] !== undefined) {
+          counts[platform]++
+        }
+      })
+    })
+
+    return counts
+  }
+
+  const getFilteredPosts = () => {
+    if (selectedPlatforms.length === 0) return scheduledPosts
+    return scheduledPosts.filter(post =>
+      post.platforms.some(platform => selectedPlatforms.includes(platform))
+    )
+  }
+
+  const handlePlatformToggle = (platform: PlatformType) => {
+    setSelectedPlatforms(current =>
+      current.includes(platform)
+        ? current.filter(p => p !== platform)
+        : [...current, platform]
+    )
+  }
 
   if (!timezone) {
     return null; // or a loading spinner
@@ -97,16 +135,16 @@ export default function SchedulePage() {
 
           <div className="w-64">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Platform
+              Active Filter
             </label>
             <select
-              value={selectedPlatform}
-              onChange={(e) => setSelectedPlatform(e.target.value as PlatformType)}
+              value={activeFilter}
+              onChange={(e) => setActiveFilter(e.target.value as PlatformType)}
               className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
-              <option value="Twitter">Twitter</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="Instagram">Instagram</option>
+              {selectedPlatforms.map(platform => (
+                <option key={platform} value={platform}>{platform}</option>
+              ))}
             </select>
           </div>
 
@@ -135,9 +173,14 @@ export default function SchedulePage() {
             ? 'flex-1 overflow-auto px-4 pr-[350px]'
             : 'flex-1 overflow-auto px-4'
         }>
+          <PlatformFilters
+            selectedPlatforms={selectedPlatforms}
+            onPlatformToggle={handlePlatformToggle}
+            postCounts={getPostCounts()}
+          />
           {viewMode === 'calendar' ? (
             <Calendar
-              posts={getPostsInTimezone(scheduledPosts)}
+              posts={getPostsInTimezone(getFilteredPosts())}
               onMovePost={handleMovePost}
               onSelectSlot={(date) => {
                 setSelectedDate(date)
@@ -149,7 +192,7 @@ export default function SchedulePage() {
           ) : (
             <Timeline
               date={selectedDate}
-              posts={getPostsInTimezone(scheduledPosts)}
+              posts={getPostsInTimezone(getFilteredPosts())}
               onMovePost={handleMovePost}
             />
           )}
@@ -159,8 +202,8 @@ export default function SchedulePage() {
           <div className="fixed right-0 top-0 h-full w-[350px] bg-white border-l border-gray-200 overflow-y-auto p-4">
             <VStack spacing={4} align="stretch">
               <FrequencyRecommendations
-                platform={selectedPlatform}
-                existingPosts={getPostsForPlatform(selectedPlatform)}
+                platform={activeFilter}
+                existingPosts={getPostsForPlatform(activeFilter)}
                 timezone={timezone}
                 onSelectTime={(time) => {
                   setSelectedDate(time)
@@ -169,7 +212,7 @@ export default function SchedulePage() {
               />
 
               <ScheduleGapAnalysis
-                posts={getPostsInTimezone(scheduledPosts)}
+                posts={getPostsInTimezone(getFilteredPosts())}
                 date={selectedDate}
                 recommendedMaxGap={8}
                 recommendedMinGap={2}
