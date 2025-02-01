@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { VStack } from '@chakra-ui/react'
 import { Calendar } from '../../components/Calendar'
 import { Timeline } from '../../components/Timeline'
 import { TimezoneSelect } from '../../components/TimezoneSelect'
 import { FrequencyRecommendations } from '../../components/FrequencyRecommendations'
 import { QueueManagerContainer } from '../../components/QueueManagerContainer'
+import { ScheduleGapAnalysis } from '../../components/ScheduleGapAnalysis'
 import { ScheduledPost } from '../../types/calendar'
 import { getUserTimezone, fromUTC, toUTC } from '../../utils/timezone'
 import { PlatformType } from '../../components/PostCreator'
@@ -16,12 +18,12 @@ export default function SchedulePage() {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar')
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [timezone, setTimezone] = useState<string>('')
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformType>('Twitter')
+  const [isFrequencyPanelOpen, setIsFrequencyPanelOpen] = useState(true)
 
   useEffect(() => {
     setTimezone(getUserTimezone())
   }, [])
-  const [selectedPlatform, setSelectedPlatform] = useState<PlatformType>('Twitter')
-  const [isFrequencyPanelOpen, setIsFrequencyPanelOpen] = useState(true)
   
   // Sample data - this would come from your backend
   const [scheduledPosts] = useState<ScheduledPost[]>([
@@ -39,6 +41,10 @@ export default function SchedulePage() {
     }
   ])
 
+  if (!timezone) {
+    return null; // or a loading spinner
+  }
+
   const handleMovePost = (postId: string, newDate: Date) => {
     console.log('Moving post', postId, 'to', newDate)
     // Here we would update the post's scheduled time in the backend
@@ -55,10 +61,6 @@ export default function SchedulePage() {
     return scheduledPosts
       .filter(post => post.platforms.includes(platform))
       .map(post => new Date(post.scheduledTime))
-  }
-
-  if (!timezone) {
-    return null; // or a loading spinner
   }
 
   return (
@@ -155,15 +157,24 @@ export default function SchedulePage() {
 
         {isFrequencyPanelOpen && (
           <div className="fixed right-0 top-0 h-full w-[350px] bg-white border-l border-gray-200 overflow-y-auto p-4">
-            <FrequencyRecommendations
-              platform={selectedPlatform}
-              existingPosts={getPostsForPlatform(selectedPlatform)}
-              timezone={timezone}
-              onSelectTime={(time) => {
-                setSelectedDate(time)
-                setViewMode('timeline')
-              }}
-            />
+            <VStack spacing={4} align="stretch">
+              <FrequencyRecommendations
+                platform={selectedPlatform}
+                existingPosts={getPostsForPlatform(selectedPlatform)}
+                timezone={timezone}
+                onSelectTime={(time) => {
+                  setSelectedDate(time)
+                  setViewMode('timeline')
+                }}
+              />
+
+              <ScheduleGapAnalysis
+                posts={getPostsInTimezone(scheduledPosts)}
+                date={selectedDate}
+                recommendedMaxGap={8}
+                recommendedMinGap={2}
+              />
+            </VStack>
           </div>
         )}
       </div>
