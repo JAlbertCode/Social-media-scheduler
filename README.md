@@ -137,7 +137,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
     - [x] Event/holiday integration
     - [ ] Custom view layouts
     - [x] Performance optimization for large schedules
-    - [ ] Undo/redo schedule changes
+    - [x] Undo/redo schedule changes
 
 ## Getting Started
 1. Clone the repository
