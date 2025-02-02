@@ -132,9 +132,9 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [x] Active state indicators
   - [x] Platform connection status indicators
 - [ ] Dashboard
-  - [ ] Post analytics cards
-  - [ ] Quick post creation
-  - [ ] Recent activity feed
+  - [x] Post analytics cards
+  - [x] Quick post creation
+  - [x] Recent activity feed
   - [ ] Platform status overview
 - [ ] Post Creation
   - [ ] Rich text editor with markdown support
