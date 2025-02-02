@@ -255,6 +255,7 @@ export default function SchedulePage() {
                 date={selectedDate}
                 posts={getPostsInTimezone(getFilteredPosts())}
                 onMovePost={handleMovePost}
+                onBack={() => setViewMode('calendar')}
               />
             )}
           </Box>
@@ -263,15 +264,16 @@ export default function SchedulePage() {
           {isFrequencyPanelOpen && (
             <Box
               position="fixed"
+              height="calc(100vh - 140px)"  // Increased height
+              top="140px"
+              overflowY="auto"
               right={6}
-              top="180px"
               width="350px"
               bg="white"
               borderWidth="1px"
               borderColor="gray.200"
               rounded="lg"
               shadow="sm"
-              overflow="hidden"
             >
               <VStack spacing={0} align="stretch" divider={<Divider />}>
                 <Box p={6} bg="gray.50">
@@ -292,7 +294,7 @@ export default function SchedulePage() {
                   />
                 </Box>
 
-                <Box p={6} borderTopWidth="1px" borderColor="gray.100">
+                <Box p={6} mb={4} borderTopWidth="1px" borderColor="gray.100">
                   <Text fontSize="md" fontWeight="semibold" color="gray.700" mb={1}>
                     Schedule Analysis
                   </Text>

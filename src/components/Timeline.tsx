@@ -4,15 +4,17 @@ import React from 'react'
 import { useDrop } from 'react-dnd'
 import { ScheduledPost, DragItem } from '../types/calendar'
 import { DraggablePost } from './DraggablePost'
-import { Box, Text, Heading, useColorModeValue } from '@chakra-ui/react'
+import { Box, Text, Heading, useColorModeValue, HStack, Button, Icon } from '@chakra-ui/react'
+import { FaChevronLeft } from 'react-icons/fa'
 
 interface TimelineProps {
   posts: ScheduledPost[]
   onMovePost?: (postId: string, newTime: Date) => void
   date: Date
+  onBack?: () => void
 }
 
-export function Timeline({ posts, onMovePost, date }: TimelineProps) {
+export function Timeline({ posts, onMovePost, date, onBack }: TimelineProps) {
   const hours = Array.from({ length: 24 }, (_, i) => i)
   
   const getPostsForHour = (hour: number) => {
@@ -75,14 +77,24 @@ export function Timeline({ posts, onMovePost, date }: TimelineProps) {
   return (
     <Box bg="white" rounded="lg" shadow="md">
       <Box p={4} borderBottom="1px" borderColor="gray.200">
-        <Heading size="md" color="gray.900">
-          {date.toLocaleDateString(undefined, { 
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </Heading>
+        <HStack justify="space-between" align="center">
+          <Heading size="md" color="gray.900">
+            {date.toLocaleDateString(undefined, { 
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </Heading>
+          <Button
+            leftIcon={<Icon as={FaChevronLeft} />}
+            onClick={onBack}
+            size="sm"
+            variant="ghost"
+          >
+            Back to Calendar
+          </Button>
+        </HStack>
       </Box>
       <Box overflowY="auto" maxH="calc(100vh - 200px)">
         {hours.map((hour) => (
