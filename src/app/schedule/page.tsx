@@ -1,7 +1,7 @@
 'use client'
 
-import { DndProvider } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
+import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
 import { useState, useEffect } from 'react'
 import {
   VStack,
@@ -25,12 +25,25 @@ import { ScheduledPost } from '../../types/calendar'
 import { CalendarConfig } from '../../types/calendars'
 import { getUserTimezone, fromUTC, toUTC } from '../../utils/timezone'
 import { PlatformType } from '../../components/PostCreator'
-
 import { PlatformToggle } from '../../components/PlatformToggle'
+import { SchedulerOnboarding } from '../../components/SchedulerOnboarding'
+import { ScheduleEmptyState } from '../../components/ScheduleEmptyState'
+import { SchedulerLoading } from '../../components/SchedulerLoading'
 
-type ViewMode = 'calendar' | 'timeline'
+// Import DndProvider dynamically
+const DndProvider = dynamic(() => import('../../components/DndProvider'), {
+  ssr: false,
+})
 
 export default function SchedulePage() {
+  return (
+    <Suspense fallback={<SchedulerLoading />}>
+      <ClientSideScheduler />
+    </Suspense>
+  )
+}
+
+function ClientSideScheduler() {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar')
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [timezone, setTimezone] = useState<string>('')
@@ -110,8 +123,6 @@ export default function SchedulePage() {
   }
 
   const getFilteredPostsByCalendar = () => {
-    // In a real app, posts would have calendarIds
-    // For now, we'll just return all posts if any calendar is active
     return activeCalendars.length > 0 ? scheduledPosts : []
   }
 
@@ -120,6 +131,10 @@ export default function SchedulePage() {
     return scheduledPosts.filter(post =>
       post.platforms.some(platform => selectedPlatforms.includes(platform))
     )
+  }
+
+  const handleCreatePost = () => {
+    window.location.href = '/create'
   }
 
   if (!timezone) {
@@ -144,7 +159,7 @@ export default function SchedulePage() {
   }
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider>
       <Box minH="calc(100vh - 64px)" bg="gray.50">
         {/* Header Controls */}
         <Box bg="white" shadow="sm" borderBottomWidth="1px" borderColor="gray.200" mb={4}>
@@ -186,11 +201,9 @@ export default function SchedulePage() {
                           ? prev.filter(p => p !== platform)
                           : [...prev, platform]
                         
-                        // Update activeFilter if we're removing its current platform
                         if (prev.includes(platform) && platform === activeFilter) {
                           setActiveFilter(newPlatforms[0] || 'Twitter')
                         }
-                        // Or if this is the first platform being added
                         else if (!prev.includes(platform) && prev.length === 0) {
                           setActiveFilter(platform)
                         }
@@ -200,8 +213,6 @@ export default function SchedulePage() {
                     }}
                   />
                 </Box>
-
-
 
                 {/* Timezone Selector */}
                 <Box>
@@ -239,7 +250,9 @@ export default function SchedulePage() {
             pr={isFrequencyPanelOpen ? '380px' : 0}
             transition="all 0.2s"
           >
-            {viewMode === 'calendar' ? (
+            {scheduledPosts.length === 0 ? (
+              <ScheduleEmptyState onCreatePost={handleCreatePost} />
+            ) : viewMode === 'calendar' ? (
               <Calendar
                 posts={getPostsInTimezone(getFilteredPostsByCalendar())}
                 onMovePost={handleMovePost}
@@ -264,7 +277,7 @@ export default function SchedulePage() {
           {isFrequencyPanelOpen && (
             <Box
               position="fixed"
-              height="calc(100vh - 140px)"  // Increased height
+              height="calc(100vh - 140px)"
               top="140px"
               overflowY="auto"
               right={6}
@@ -316,7 +329,7 @@ export default function SchedulePage() {
                   <Text fontSize="sm" color="gray.500" mb={4}>
                     Organize your content calendars
                   </Text>
-                  <CalendarManager
+                  <CalendarManager 
                     calendars={calendars}
                     activeCalendars={activeCalendars}
                     onToggleCalendar={handleToggleCalendar}

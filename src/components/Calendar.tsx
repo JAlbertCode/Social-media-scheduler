@@ -46,9 +46,14 @@ function CalendarDay({
 }: CalendarDayProps) {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'POST',
-    drop: (item: DragItem) => onDrop(item),
+    drop: (item: DragItem, monitor) => {
+      // Only handle the drop if it's directly on the day container
+      if (monitor.isOver({ shallow: true })) {
+        onDrop(item)
+      }
+    },
     collect: monitor => ({
-      isOver: !!monitor.isOver()
+      isOver: monitor.isOver({ shallow: true })
     })
   }))
 
@@ -61,9 +66,14 @@ function CalendarDay({
 
   return (
     <Box
-      ref={drop}
-      onClick={onClick}
-      bg={
+    ref={drop}
+    onClick={(e) => {
+      // Only trigger click if not dragging
+          if (!isOver) {
+            onClick()
+          }
+        }}
+        bg={
         !isCurrentMonth ? inactiveBg :
         isToday ? todayBg :
         isOver ? dropBg :
@@ -92,7 +102,14 @@ function CalendarDay({
       </Text>
       <VStack spacing={1} align="stretch">
         {posts.map((post) => (
-          <DraggablePost key={post.id} post={post} allPosts={allPosts} />
+          <Box
+          key={post.id}
+          onClick={(e) => {
+            e.stopPropagation() // Prevent day click when clicking post
+          }}
+        >
+          <DraggablePost post={post} allPosts={allPosts} />
+        </Box>
         ))}
       </VStack>
     </Box>

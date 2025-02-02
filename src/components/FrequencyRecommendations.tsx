@@ -84,7 +84,17 @@ export function FrequencyRecommendations({
           {recommendedTimes.map((time, index) => (
             <Button
               key={index}
-              onClick={() => onSelectTime?.(time)}
+              onClick={() => {
+                if (onSelectTime) {
+                  const now = new Date()
+                  const scheduleTime = new Date(time)
+                  // If time is in past, schedule for next occurrence
+                  if (scheduleTime < now) {
+                    scheduleTime.setDate(scheduleTime.getDate() + 1)
+                  }
+                  onSelectTime(scheduleTime)
+                }
+              }}
               variant="ghost"
               size="sm"
               justifyContent="flex-start"
