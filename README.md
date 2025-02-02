@@ -1,5 +1,17 @@
 # Social Media Scheduler
-A comprehensive social media scheduling platform that allows seamless content management and publishing across multiple social media platforms, inspired by Buffer's functionality.
+A comprehensive social media scheduling platform that allows seamless content management and publishing across multiple social media platforms.
+
+## Table of Contents
+- [Features](#features)
+- [Technical Requirements](#technical-requirements)
+- [Development Phases](#development-phases)
+- [Getting Started](#getting-started)
+- [Usage Guide](#usage-guide)
+- [API Documentation](#api-documentation)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Features
 ### Platform Integration
 - [ ] Authentication and API integration for:
@@ -12,6 +24,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [x] Threads
   - [x] Bluesky
   - [ ] Mastodon
+
 ### Content Management
 - [x] Media Upload System
   - [x] Image upload with platform-specific dimension suggestions
@@ -21,6 +34,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
     - [x] YouTube Shorts
     - [x] Instagram Reels
     - [x] TikTok
+
 ### Post Creation
 - [x] Rich text editor for post content
 - [x] Character limit validation per platform
@@ -29,6 +43,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [x] Hashtag suggestions
   - [x] Mention functionality
   - [x] Link preview handling
+
 ### Scheduling System
 - [x] Calendar interface for content scheduling
   - [x] Drag and drop functionality
@@ -37,6 +52,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Time zone management
 - [x] Posting frequency recommendations
 - [x] Queue management
+
 ### Notion Integration
 - [ ] Bidirectional sync with Notion
   - [x] Content status tracking
@@ -45,11 +61,13 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Content template system
   - [x] Platform-specific formatting
   - [x] Variable substitution
+
 ### Analytics & Monitoring
 - [x] Post status tracking
 - [x] Scheduling conflicts detection
 - [x] Failed post notifications
 - [x] Basic analytics per platform
+
 ## Technical Requirements
 ### Frontend
 - [x] React-based web application
@@ -57,6 +75,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Calendar component
 - [x] Media preview system
 - [x] Platform-specific post previews
+
 ### Backend
 - [x] Authentication system
 - [x] API management for multiple platforms
@@ -64,40 +83,48 @@ A comprehensive social media scheduling platform that allows seamless content ma
 - [x] Scheduling service
 - [x] Notion API integration
 - [x] Database schema design
+
 ### Infrastructure
 - [x] Cloud storage for media files
 - [x] Scheduled task system
 - [x] Error handling and logging
 - [x] Backup system
 - [x] Rate limiting implementation
+
 ## Development Phases
 ### Phase 1: Core Infrastructure
 - [x] Project setup and basic architecture
 - [x] Database schema design
 - [x] Basic user authentication
 - [x] File upload system
+
 ### Phase 2: Platform Integration
 - [ ] Individual platform API integration
 - [ ] Platform-specific post validation
 - [ ] Media format handling
+
 ### Phase 3: Scheduling System
 - [x] Calendar implementation
 - [x] Scheduling logic
 - [x] Queue management
+
 ### Phase 4: Notion Integration
 - [ ] Notion API setup
 - [ ] Content sync system
 - [ ] Status management
+
 ### Phase 5: UI/UX Implementation
 - [x] Dashboard design
 - [x] Content creation interface
 - [x] Calendar view
 - [x] Platform-specific previews
+
 ### Phase 6: Testing & Optimization
 - [x] Unit testing
 - [ ] Integration testing
 - [ ] Performance optimization
 - [ ] Security audit
+
 ### User Interface
 - [x] Navigation
   - [x] Responsive sidebar/header navigation
@@ -127,7 +154,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [x] Color coding by platform
   - [x] Post preview on hover
   - [x] Drag and drop scheduling
-  - [ ] Advanced Calendar Features
+  - [x] Advanced Calendar Features
     - [x] Visual conflict indicators
     - [x] Timezone overlay
     - [x] Schedule gaps analysis
@@ -140,11 +167,20 @@ A comprehensive social media scheduling platform that allows seamless content ma
     - [x] Undo/redo schedule changes
 
 ## Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- A database (PostgreSQL recommended)
+- Redis (for caching and job queues)
+
+### Installation
 1. Clone the repository
 2. Install dependencies:
 ```bash
 npm install
 ```
+
 3. Set up environment variables:
 - Copy `.env.local.example` to `.env.local`
 - Fill in required API keys and credentials
@@ -159,10 +195,10 @@ npx prisma migrate dev
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
 Note: Authentication is currently disabled in middleware.ts for testing purposes. Re-enable before deployment.
+
 ## Contributing
 [To be added: Contribution guidelines]
+
 ## License
 [To be added: License information]
