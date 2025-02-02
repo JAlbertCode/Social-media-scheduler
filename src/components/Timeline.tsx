@@ -55,7 +55,7 @@ export function Timeline({ posts, onMovePost, date }: TimelineProps) {
         </div>
         <div className="flex-grow p-2">
           {hourPosts.map((post) => (
-            <DraggablePost key={post.id} post={post} />
+            <DraggablePost key={post.id} post={post} allPosts={posts} />
           ))}
         </div>
       </div>
