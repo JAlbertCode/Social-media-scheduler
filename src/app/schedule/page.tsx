@@ -3,7 +3,17 @@
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { useState, useEffect } from 'react'
-import { VStack } from '@chakra-ui/react'
+import {
+  VStack,
+  Box,
+  HStack,
+  Text,
+  Button,
+  ButtonGroup,
+  Select,
+  Divider,
+} from '@chakra-ui/react'
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import { Calendar } from '../../components/Calendar'
 import { Timeline } from '../../components/Timeline'
 import { TimezoneSelect } from '../../components/TimezoneSelect'
@@ -103,27 +113,6 @@ export default function SchedulePage() {
     return activeCalendars.length > 0 ? scheduledPosts : []
   }
 
-  const getPostCounts = () => {
-    const counts: Record<PlatformType, number> = {
-      Twitter: 0,
-      LinkedIn: 0,
-      Instagram: 0,
-      TikTok: 0,
-      YouTube: 0,
-      Bluesky: 0,
-    }
-
-    scheduledPosts.forEach(post => {
-      post.platforms.forEach(platform => {
-        if (counts[platform] !== undefined) {
-          counts[platform]++
-        }
-      })
-    })
-
-    return counts
-  }
-
   const getFilteredPosts = () => {
     if (selectedPlatforms.length === 0) return scheduledPosts
     return scheduledPosts.filter(post =>
@@ -132,12 +121,11 @@ export default function SchedulePage() {
   }
 
   if (!timezone) {
-    return null; // or a loading spinner
+    return null
   }
 
   const handleMovePost = (postId: string, newDate: Date) => {
     console.log('Moving post', postId, 'to', newDate)
-    // Here we would update the post's scheduled time in the backend
   }
 
   const getPostsInTimezone = (posts: ScheduledPost[]): ScheduledPost[] => {
@@ -155,130 +143,167 @@ export default function SchedulePage() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="h-[calc(100vh-4rem)] overflow-hidden">
-      <div className="flex items-center justify-between mb-4 px-4">
-        <div className="flex items-center space-x-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              View Mode
-            </label>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setViewMode('calendar')}
-                className={
-                  viewMode === 'calendar'
-                    ? 'px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white'
-                    : 'px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }
-              >
-                Calendar
-              </button>
-              <button
-                onClick={() => setViewMode('timeline')}
-                className={
-                  viewMode === 'timeline'
-                    ? 'px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white'
-                    : 'px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }
-              >
-                Timeline
-              </button>
-            </div>
-          </div>
+      <Box minH="calc(100vh - 64px)" bg="gray.50">
+        {/* Header Controls */}
+        <Box bg="white" shadow="sm" borderBottomWidth="1px" borderColor="gray.200" mb={4}>
+          <Box maxW="7xl" mx="auto" px={6} py={4}>
+            <HStack justify="space-between" align="center">
+              {/* Left side - View controls */}
+              <HStack spacing={8}>
+                {/* View Mode Toggle */}
+                <Box>
+                  <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={2}>
+                    View Mode
+                  </Text>
+                  <ButtonGroup size="sm" isAttached variant="outline">
+                    <Button
+                      onClick={() => setViewMode('calendar')}
+                      colorScheme={viewMode === 'calendar' ? 'blue' : undefined}
+                    >
+                      Calendar
+                    </Button>
+                    <Button
+                      onClick={() => setViewMode('timeline')}
+                      colorScheme={viewMode === 'timeline' ? 'blue' : undefined}
+                    >
+                      Timeline
+                    </Button>
+                  </ButtonGroup>
+                </Box>
 
-          <div className="w-64">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Active Filter
-            </label>
-            <select
-              value={activeFilter}
-              onChange={(e) => setActiveFilter(e.target.value as PlatformType)}
-              className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
-              {selectedPlatforms.map(platform => (
-                <option key={platform} value={platform}>{platform}</option>
-              ))}
-            </select>
-          </div>
+                {/* Platform Filter */}
+                <Box>
+                  <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={2}>
+                    Platform
+                  </Text>
+                  <Select
+                    value={activeFilter}
+                    onChange={(e) => setActiveFilter(e.target.value as PlatformType)}
+                    size="sm"
+                    width="200px"
+                  >
+                    {selectedPlatforms.map(platform => (
+                      <option key={platform} value={platform}>{platform}</option>
+                    ))}
+                  </Select>
+                </Box>
 
-          <div className="w-64">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Timezone
-            </label>
-            <TimezoneSelect
-              value={timezone}
-              onChange={setTimezone}
-            />
-          </div>
-        </div>
+                {/* Timezone Selector */}
+                <Box>
+                  <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={2}>
+                    Timezone
+                  </Text>
+                  <Box width="200px">
+                    <TimezoneSelect
+                      value={timezone}
+                      onChange={setTimezone}
+                    />
+                  </Box>
+                </Box>
+              </HStack>
 
-        <button
-          onClick={() => setIsFrequencyPanelOpen(!isFrequencyPanelOpen)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-        >
-          {isFrequencyPanelOpen ? 'Hide Analytics' : 'Show Analytics'}
-        </button>
-      </div>
+              {/* Right side - Analytics Toggle */}
+              <Box>
+                <Button
+                  onClick={() => setIsFrequencyPanelOpen(!isFrequencyPanelOpen)}
+                  size="sm"
+                  variant="ghost"
+                  rightIcon={isFrequencyPanelOpen ? <FaChevronRight /> : <FaChevronLeft />}
+                >
+                  {isFrequencyPanelOpen ? 'Hide Analytics' : 'Show Analytics'}
+                </Button>
+              </Box>
+            </HStack>
+          </Box>
+        </Box>
 
-      <div className="flex h-full">
-        <div className={
-          isFrequencyPanelOpen 
-            ? 'flex-1 overflow-auto px-4 pr-[350px]'
-            : 'flex-1 overflow-auto px-4'
-        }>
-          {viewMode === 'calendar' ? (
-            <Calendar
-              posts={getPostsInTimezone(getFilteredPostsByCalendar())}
-              onMovePost={handleMovePost}
-              onSelectSlot={(date) => {
-                setSelectedDate(date)
-                setViewMode('timeline')
-              }}
-              localTimezone={timezone}
-              targetTimezones={["America/New_York", "Europe/London", "Asia/Tokyo"]}
-            />
-          ) : (
-            <Timeline
-              date={selectedDate}
-              posts={getPostsInTimezone(getFilteredPosts())}
-              onMovePost={handleMovePost}
-            />
-          )}
-        </div>
-
-        {isFrequencyPanelOpen && (
-          <div className="fixed right-0 top-0 h-full w-[350px] bg-white border-l border-gray-200 overflow-y-auto p-4">
-            <VStack spacing={4} align="stretch">
-              <FrequencyRecommendations
-                platform={activeFilter}
-                existingPosts={getPostsForPlatform(activeFilter)}
-                timezone={timezone}
-                onSelectTime={(time) => {
-                  setSelectedDate(time)
+        {/* Main Content */}
+        <Box maxW="7xl" mx="auto" position="relative" px={6}>
+          <Box
+            pb={6}
+            pr={isFrequencyPanelOpen ? '380px' : 0}
+            transition="all 0.2s"
+          >
+            {viewMode === 'calendar' ? (
+              <Calendar
+                posts={getPostsInTimezone(getFilteredPostsByCalendar())}
+                onMovePost={handleMovePost}
+                onSelectSlot={(date) => {
+                  setSelectedDate(date)
                   setViewMode('timeline')
                 }}
+                localTimezone={timezone}
+                targetTimezones={["America/New_York", "Europe/London", "Asia/Tokyo"]}
               />
-
-              <ScheduleGapAnalysis
-                posts={getPostsInTimezone(getFilteredPosts())}
+            ) : (
+              <Timeline
                 date={selectedDate}
-                recommendedMaxGap={8}
-                recommendedMinGap={2}
+                posts={getPostsInTimezone(getFilteredPosts())}
+                onMovePost={handleMovePost}
               />
+            )}
+          </Box>
 
-              <CalendarManager
-                calendars={calendars}
-                activeCalendars={activeCalendars}
-                onToggleCalendar={handleToggleCalendar}
-                onAddCalendar={handleAddCalendar}
-                onEditCalendar={handleEditCalendar}
-                onDeleteCalendar={handleDeleteCalendar}
-              />
-            </VStack>
-          </div>
-        )}
-      </div>
-      </div>
+          {/* Analytics Panel */}
+          {isFrequencyPanelOpen && (
+            <Box
+              position="fixed"
+              right={6}
+              top="110px"
+              width="350px"
+              bg="white"
+              borderWidth="1px"
+              borderColor="gray.200"
+              rounded="lg"
+              shadow="sm"
+              overflow="hidden"
+            >
+              <VStack spacing={0} align="stretch" divider={<Divider />}>
+                <Box p={4}>
+                  <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={4}>
+                    Posting Recommendations
+                  </Text>
+                  <FrequencyRecommendations
+                    platform={activeFilter}
+                    existingPosts={getPostsForPlatform(activeFilter)}
+                    timezone={timezone}
+                    onSelectTime={(time) => {
+                      setSelectedDate(time)
+                      setViewMode('timeline')
+                    }}
+                  />
+                </Box>
+
+                <Box p={4}>
+                  <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={4}>
+                    Schedule Analysis
+                  </Text>
+                  <ScheduleGapAnalysis
+                    posts={getPostsInTimezone(getFilteredPosts())}
+                    date={selectedDate}
+                    recommendedMaxGap={8}
+                    recommendedMinGap={2}
+                  />
+                </Box>
+
+                <Box p={4}>
+                  <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={4}>
+                    Calendar Management
+                  </Text>
+                  <CalendarManager
+                    calendars={calendars}
+                    activeCalendars={activeCalendars}
+                    onToggleCalendar={handleToggleCalendar}
+                    onAddCalendar={handleAddCalendar}
+                    onEditCalendar={handleEditCalendar}
+                    onDeleteCalendar={handleDeleteCalendar}
+                  />
+                </Box>
+              </VStack>
+            </Box>
+          )}
+        </Box>
+      </Box>
     </DndProvider>
   )
 }
