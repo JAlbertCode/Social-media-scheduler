@@ -1,6 +1,15 @@
 'use client'
 
 import React from 'react'
+import {
+  VStack,
+  HStack,
+  Box,
+  Text,
+  Button,
+  SimpleGrid,
+  Divider,
+} from '@chakra-ui/react'
 import { PlatformType } from './PostCreator'
 import { getRecommendedTimes, analyzePostingPattern } from '../utils/frequency'
 import { formatInTimezone } from '../utils/timezone'
@@ -22,64 +31,79 @@ export function FrequencyRecommendations({
   const recommendedTimes = getRecommendedTimes(platform, timezone, existingPosts)
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold mb-4">
-        Posting Recommendations for {platform}
-      </h3>
-      
-      <div className="space-y-4">
-        {/* Current Pattern Analysis */}
-        <div className="border-b pb-4">
-          <h4 className="font-medium mb-2">Current Posting Pattern</h4>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Average Frequency</p>
-              <p className="font-medium">
-                {analysis.frequency.toFixed(1)} posts/day
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Time Consistency</p>
-              <p className="font-medium">
-                {(analysis.consistency * 100).toFixed(0)}%
-              </p>
-            </div>
-          </div>
-        </div>
+    <VStack spacing={4} align="stretch">
+      {/* Current Pattern Analysis */}
+      <Box>
+        <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={3}>
+          Current Pattern
+        </Text>
+        <SimpleGrid columns={2} spacing={4}>
+          <Box>
+            <Text fontSize="sm" color="gray.600" mb={1}>
+              Average Frequency
+            </Text>
+            <Text fontSize="md" fontWeight="semibold">
+              {analysis.frequency.toFixed(1)} posts/day
+            </Text>
+          </Box>
+          <Box>
+            <Text fontSize="sm" color="gray.600" mb={1}>
+              Time Consistency
+            </Text>
+            <Text fontSize="md" fontWeight="semibold">
+              {(analysis.consistency * 100).toFixed(0)}%
+            </Text>
+          </Box>
+        </SimpleGrid>
+      </Box>
 
-        {/* Recommendations */}
-        <div className="border-b pb-4">
-          <h4 className="font-medium mb-2">Recommendations</h4>
-          <ul className="space-y-2">
-            {analysis.recommendations.map((rec, index) => (
-              <li key={index} className="text-sm text-gray-600">
-                • {rec}
-              </li>
-            ))}
-          </ul>
-        </div>
+      <Divider />
 
-        {/* Suggested Times */}
-        <div>
-          <h4 className="font-medium mb-2">Recommended Posting Times</h4>
-          <div className="space-y-2">
-            {recommendedTimes.map((time, index) => (
-              <button
-                key={index}
-                onClick={() => onSelectTime?.(time)}
-                className="block w-full text-left p-2 rounded hover:bg-blue-50 transition-colors"
-              >
-                <span className="text-sm text-blue-600">
-                  {formatInTimezone(time, timezone, 'h:mm a')}
-                </span>
-                <span className="text-xs text-gray-500 ml-2">
+      {/* Recommendations */}
+      <Box>
+        <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={3}>
+          Recommendations
+        </Text>
+        <VStack spacing={2} align="stretch">
+          {analysis.recommendations.map((rec, index) => (
+            <Text key={index} fontSize="sm" color="gray.600">
+              • {rec}
+            </Text>
+          ))}
+        </VStack>
+      </Box>
+
+      <Divider />
+
+      {/* Suggested Times */}
+      <Box>
+        <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={3}>
+          Best Times to Post
+        </Text>
+        <VStack spacing={2} align="stretch">
+          {recommendedTimes.map((time, index) => (
+            <Button
+              key={index}
+              onClick={() => onSelectTime?.(time)}
+              variant="ghost"
+              size="sm"
+              justifyContent="flex-start"
+              height="auto"
+              py={2}
+              px={3}
+              color="blue.600"
+              _hover={{ bg: 'blue.50' }}
+            >
+              <Text fontSize="sm" fontWeight="medium">
+                {formatInTimezone(time, timezone, 'h:mm a')}
+                <Text as="span" fontSize="xs" color="gray.500" ml={2}>
                   (Click to schedule)
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+                </Text>
+              </Text>
+            </Button>
+          ))}
+        </VStack>
+      </Box>
+    </VStack>
   )
 }

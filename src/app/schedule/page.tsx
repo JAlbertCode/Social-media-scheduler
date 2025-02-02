@@ -26,6 +26,8 @@ import { CalendarConfig } from '../../types/calendars'
 import { getUserTimezone, fromUTC, toUTC } from '../../utils/timezone'
 import { PlatformType } from '../../components/PostCreator'
 
+import { PlatformToggle } from '../../components/PlatformToggle'
+
 type ViewMode = 'calendar' | 'timeline'
 
 export default function SchedulePage() {
@@ -171,6 +173,23 @@ export default function SchedulePage() {
                   </ButtonGroup>
                 </Box>
 
+                {/* Platform Toggles */}
+                <Box>
+                  <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={2}>
+                    Platforms
+                  </Text>
+                  <PlatformToggle
+                    selectedPlatforms={selectedPlatforms}
+                    onTogglePlatform={(platform) => {
+                      setSelectedPlatforms(prev =>
+                        prev.includes(platform)
+                          ? prev.filter(p => p !== platform)
+                          : [...prev, platform]
+                      )
+                    }}
+                  />
+                </Box>
+
                 {/* Platform Filter */}
                 <Box>
                   <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={2}>
@@ -249,7 +268,7 @@ export default function SchedulePage() {
             <Box
               position="fixed"
               right={6}
-              top="110px"
+              top="120px"
               width="350px"
               bg="white"
               borderWidth="1px"
@@ -259,9 +278,12 @@ export default function SchedulePage() {
               overflow="hidden"
             >
               <VStack spacing={0} align="stretch" divider={<Divider />}>
-                <Box p={4}>
-                  <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={4}>
-                    Posting Recommendations
+                <Box p={6} bg="gray.50">
+                  <Text fontSize="md" fontWeight="semibold" color="gray.700" mb={1}>
+                    Analytics & Insights
+                  </Text>
+                  <Text fontSize="sm" color="gray.500" mb={4}>
+                    Optimize your posting schedule
                   </Text>
                   <FrequencyRecommendations
                     platform={activeFilter}
@@ -274,9 +296,12 @@ export default function SchedulePage() {
                   />
                 </Box>
 
-                <Box p={4}>
-                  <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={4}>
+                <Box p={6} borderTopWidth="1px" borderColor="gray.100">
+                  <Text fontSize="md" fontWeight="semibold" color="gray.700" mb={1}>
                     Schedule Analysis
+                  </Text>
+                  <Text fontSize="sm" color="gray.500" mb={4}>
+                    Monitor post frequency and gaps
                   </Text>
                   <ScheduleGapAnalysis
                     posts={getPostsInTimezone(getFilteredPosts())}
@@ -286,9 +311,12 @@ export default function SchedulePage() {
                   />
                 </Box>
 
-                <Box p={4}>
-                  <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={4}>
+                <Box p={6} borderTopWidth="1px" borderColor="gray.100">
+                  <Text fontSize="md" fontWeight="semibold" color="gray.700" mb={1}>
                     Calendar Management
+                  </Text>
+                  <Text fontSize="sm" color="gray.500" mb={4}>
+                    Organize your content calendars
                   </Text>
                   <CalendarManager
                     calendars={calendars}
