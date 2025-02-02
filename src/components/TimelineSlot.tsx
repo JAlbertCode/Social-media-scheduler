@@ -8,7 +8,6 @@ import {
   VStack,
   Button,
   useColorModeValue,
-  Collapse,
   Icon,
 } from '@chakra-ui/react'
 import { FaPlus } from 'react-icons/fa'
@@ -20,7 +19,7 @@ interface TimelineSlotProps {
   posts: ScheduledPost[]
   allPosts: ScheduledPost[]
   onMovePost?: (postId: string, newTime: Date) => void
-  onCreatePost?: (time: Date) => void
+  onCreatePost?: () => void
   date: Date
 }
 
@@ -32,37 +31,21 @@ export function TimelineSlot({
   onCreatePost,
   date,
 }: TimelineSlotProps) {
-  const [isHovered, setIsHovered] = React.useState(false)
-
-  const [{ isOver, canDrop }, drop] = useDrop(() => ({
+  const [{ isOver }, drop] = useDrop(() => ({
     accept: 'POST',
     drop: (item: DragItem, monitor) => {
       if (onMovePost && monitor.isOver({ shallow: true })) {
         const newDate = new Date(date)
         newDate.setHours(hour)
-        // Preserve minutes from original post
-        const originalDate = new Date(item.originalDate)
-        newDate.setMinutes(originalDate.getMinutes())
         onMovePost(item.id, newDate)
       }
     },
     collect: monitor => ({
-      isOver: monitor.isOver({ shallow: true }),
-      canDrop: monitor.canDrop()
+      isOver: monitor.isOver({ shallow: true })
     })
   }))
 
-  const handleCreateClick = () => {
-    if (onCreatePost) {
-      const newDate = new Date(date)
-      newDate.setHours(hour)
-      newDate.setMinutes(0)
-      onCreatePost(newDate)
-    }
-  }
-
   const borderColor = useColorModeValue('gray.200', 'gray.700')
-  const hoverBg = useColorModeValue('gray.50', 'gray.700')
   const dropBg = useColorModeValue('blue.50', 'blue.900')
   const timeColor = useColorModeValue('gray.600', 'gray.400')
 
@@ -73,9 +56,7 @@ export function TimelineSlot({
       borderBottom="1px"
       borderColor={borderColor}
       minH="100px"
-      bg={isOver && canDrop ? dropBg : 'transparent'}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      bg={isOver ? dropBg : 'transparent'}
       transition="all 0.2s"
       position="relative"
     >
@@ -96,25 +77,29 @@ export function TimelineSlot({
       <Box flexGrow={1} p={2} position="relative">
         <VStack spacing={2} align="stretch">
           {posts.map((post) => (
-            <DraggablePost key={post.id} post={post} allPosts={allPosts} />
+            <Box
+              key={post.id}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DraggablePost post={post} allPosts={allPosts} />
+            </Box>
           ))}
           
           {/* Quick Create Button */}
-          <Collapse in={isHovered && posts.length === 0}>
+          {!isOver && posts.length === 0 && (
             <Button
               size="sm"
               variant="ghost"
               leftIcon={<Icon as={FaPlus} />}
-              onClick={handleCreateClick}
+              onClick={onCreatePost}
               width="100%"
               justifyContent="start"
               color="blue.500"
-              bg={hoverBg}
               _hover={{ bg: useColorModeValue('blue.50', 'blue.900') }}
             >
               Schedule post for {hour.toString().padStart(2, '0')}:00
             </Button>
-          </Collapse>
+          )}
         </VStack>
       </Box>
     </Box>

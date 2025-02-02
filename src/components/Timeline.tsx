@@ -11,9 +11,10 @@ interface TimelineProps {
   onMovePost?: (postId: string, newTime: Date) => void
   date: Date
   onBack?: () => void
+  onCreatePost?: (time: Date) => void
 }
 
-export function Timeline({ posts, onMovePost, date, onBack }: TimelineProps) {
+export function Timeline({ posts, onMovePost, date, onBack, onCreatePost }: TimelineProps) {
   const hours = Array.from({ length: 24 }, (_, i) => i)
   
   const getPostsForHour = (hour: number) => {
@@ -26,6 +27,14 @@ export function Timeline({ posts, onMovePost, date, onBack }: TimelineProps) {
     })
   }
 
+  const handleCreateNewPost = (hour: number) => {
+    if (onCreatePost) {
+      const newDate = new Date(date)
+      newDate.setHours(hour)
+      newDate.setMinutes(0)
+      onCreatePost(newDate)
+    }
+  }
 
   return (
     <Box bg="white" rounded="lg" shadow="md">
@@ -58,10 +67,7 @@ export function Timeline({ posts, onMovePost, date, onBack }: TimelineProps) {
             posts={getPostsForHour(hour)}
             allPosts={posts}
             onMovePost={onMovePost}
-            onCreatePost={(time) => {
-              // Navigate to post creation with pre-filled time
-              window.location.href = `/create?scheduledTime=${time.toISOString()}`
-            }}
+            onCreatePost={() => handleCreateNewPost(hour)}
           />
         ))}
       </Box>

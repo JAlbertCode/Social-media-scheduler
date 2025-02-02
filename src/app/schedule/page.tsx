@@ -12,6 +12,7 @@ import {
   ButtonGroup,
   Select,
   Divider,
+  useDisclosure,
 } from '@chakra-ui/react'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import { Calendar } from '../../components/Calendar'
@@ -29,11 +30,14 @@ import { PlatformToggle } from '../../components/PlatformToggle'
 import { SchedulerOnboarding } from '../../components/SchedulerOnboarding'
 import { ScheduleEmptyState } from '../../components/ScheduleEmptyState'
 import { SchedulerLoading } from '../../components/SchedulerLoading'
+import { PostCreator } from '../../components/PostCreator'
 
 // Import DndProvider dynamically
 const DndProvider = dynamic(() => import('../../components/DndProvider'), {
   ssr: false,
 })
+
+type ViewMode = 'calendar' | 'timeline'
 
 export default function SchedulePage() {
   return (
@@ -50,6 +54,8 @@ function ClientSideScheduler() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformType[]>(['Twitter', 'LinkedIn', 'Instagram'])
   const [activeFilter, setActiveFilter] = useState<PlatformType>('Twitter')
   const [isFrequencyPanelOpen, setIsFrequencyPanelOpen] = useState(true)
+  const { isOpen: isComposeOpen, onOpen: openCompose, onClose: closeCompose } = useDisclosure()
+  const [scheduleTime, setScheduleTime] = useState<Date | null>(null)
   const [calendars, setCalendars] = useState<CalendarConfig[]>([
     {
       id: '1',
@@ -92,6 +98,18 @@ function ClientSideScheduler() {
     }
   ])
 
+  const handleOpenCompose = (time?: Date) => {
+    if (time) {
+      setScheduleTime(time)
+    }
+    openCompose()
+  }
+
+  const handleCloseCompose = () => {
+    setScheduleTime(null)
+    closeCompose()
+  }
+
   const handleToggleCalendar = (calendarId: string) => {
     setActiveCalendars(prev =>
       prev.includes(calendarId)
@@ -133,8 +151,8 @@ function ClientSideScheduler() {
     )
   }
 
-  const handleCreatePost = () => {
-    window.location.href = '/create'
+  const handleCreatePost = (time?: Date) => {
+    handleOpenCompose(time)
   }
 
   if (!timezone) {
@@ -257,8 +275,7 @@ function ClientSideScheduler() {
                 posts={getPostsInTimezone(getFilteredPostsByCalendar())}
                 onMovePost={handleMovePost}
                 onSelectSlot={(date) => {
-                  setSelectedDate(date)
-                  setViewMode('timeline')
+                  handleCreatePost(date)
                 }}
                 localTimezone={timezone}
                 targetTimezones={["America/New_York", "Europe/London", "Asia/Tokyo"]}
@@ -269,6 +286,7 @@ function ClientSideScheduler() {
                 posts={getPostsInTimezone(getFilteredPosts())}
                 onMovePost={handleMovePost}
                 onBack={() => setViewMode('calendar')}
+                onCreatePost={handleCreatePost}
               />
             )}
           </Box>
@@ -301,8 +319,7 @@ function ClientSideScheduler() {
                     existingPosts={getPostsForPlatform(activeFilter)}
                     timezone={timezone}
                     onSelectTime={(time) => {
-                      setSelectedDate(time)
-                      setViewMode('timeline')
+                      handleCreatePost(time)
                     }}
                   />
                 </Box>
@@ -342,6 +359,16 @@ function ClientSideScheduler() {
             </Box>
           )}
         </Box>
+
+        {/* Post Creator Dialog */}
+        {isComposeOpen && (
+          <PostCreator
+            isOpen={isComposeOpen}
+            onClose={handleCloseCompose}
+            initialScheduledTime={scheduleTime}
+            selectedPlatforms={selectedPlatforms}
+          />
+        )}
       </Box>
     </DndProvider>
   )
