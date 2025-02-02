@@ -4,6 +4,7 @@ import React from 'react'
 import { useDrop } from 'react-dnd'
 import { ScheduledPost, DragItem } from '../types/calendar'
 import { DraggablePost } from './DraggablePost'
+import { Box, Text, Heading, useColorModeValue } from '@chakra-ui/react'
 
 interface TimelineProps {
   posts: ScheduledPost[]
@@ -43,42 +44,51 @@ export function Timeline({ posts, onMovePost, date }: TimelineProps) {
     const formattedHour = hour.toString().padStart(2, '0') + ':00'
 
     return (
-      <div
+      <Box
         ref={drop}
-        className={`
-          flex border-b border-gray-200 min-h-[100px]
-          ${isOver ? 'bg-blue-50' : 'hover:bg-gray-50'}
-        `}
+        display="flex"
+        borderBottom="1px"
+        borderColor="gray.200"
+        minH="100px"
+        bg={isOver ? 'blue.50' : 'white'}
+        _hover={{ bg: isOver ? 'blue.50' : 'gray.50' }}
+        transition="background-color 0.2s"
       >
-        <div className="w-20 p-2 border-r border-gray-200 flex-shrink-0">
-          <span className="text-sm text-gray-500">{formattedHour}</span>
-        </div>
-        <div className="flex-grow p-2">
+        <Box
+          w="80px"
+          p={2}
+          borderRight="1px"
+          borderColor="gray.200"
+          flexShrink={0}
+        >
+          <Text fontSize="sm" color="gray.500">{formattedHour}</Text>
+        </Box>
+        <Box flexGrow={1} p={2}>
           {hourPosts.map((post) => (
             <DraggablePost key={post.id} post={post} allPosts={posts} />
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {date.toLocaleDateString(undefined, { 
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </h2>
-        </div>
-        <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
-          {hours.map((hour) => (
-            <TimeSlot key={hour} hour={hour} />
-          ))}
-        </div>
-      </div>
+    <Box bg="white" rounded="lg" shadow="md">
+      <Box p={4} borderBottom="1px" borderColor="gray.200">
+        <Heading size="md" color="gray.900">
+          {date.toLocaleDateString(undefined, { 
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </Heading>
+      </Box>
+      <Box overflowY="auto" maxH="calc(100vh - 200px)">
+        {hours.map((hour) => (
+          <TimeSlot key={hour} hour={hour} />
+        ))}
+      </Box>
+    </Box>
   )
 }

@@ -264,7 +264,7 @@ export default function SchedulePage() {
             <Box
               position="fixed"
               right={6}
-              top="120px"
+              top="180px"
               width="350px"
               bg="white"
               borderWidth="1px"
