@@ -64,21 +64,21 @@ export function Timeline({ posts, onMovePost, date }: TimelineProps) {
 
   return (
     <div className="bg-white rounded-lg shadow">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">
-          {date.toLocaleDateString(undefined, { 
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </h2>
+        <div className="p-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {date.toLocaleDateString(undefined, { 
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </h2>
+        </div>
+        <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+          {hours.map((hour) => (
+            <TimeSlot key={hour} hour={hour} />
+          ))}
+        </div>
       </div>
-      <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
-        {hours.map((hour) => (
-          <TimeSlot key={hour} hour={hour} />
-        ))}
-      </div>
-    </div>
   )
 }

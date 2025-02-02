@@ -1,5 +1,7 @@
 'use client'
 
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import { useState, useEffect } from 'react'
 import { VStack } from '@chakra-ui/react'
 import { Calendar } from '../../components/Calendar'
@@ -152,7 +154,8 @@ export default function SchedulePage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] overflow-hidden">
+    <DndProvider backend={HTML5Backend}>
+      <div className="h-[calc(100vh-4rem)] overflow-hidden">
       <div className="flex items-center justify-between mb-4 px-4">
         <div className="flex items-center space-x-4">
           <div>
@@ -275,6 +278,7 @@ export default function SchedulePage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </DndProvider>
   )
 }

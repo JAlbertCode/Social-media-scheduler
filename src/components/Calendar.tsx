@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { DndProvider, useDrop } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
+import { useDrop } from 'react-dnd'
 import { ScheduledPost, DragItem } from '../types/calendar'
 import { DraggablePost } from './DraggablePost'
 import { BusinessEventOverlay } from './BusinessEventOverlay'
@@ -147,8 +146,7 @@ export function Calendar({ posts, onSelectSlot, onMovePost, localTimezone, targe
   const weekdayBg = useColorModeValue('gray.50', 'gray.900')
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <Box
+    <Box
         bg={headerBg}
         rounded="xl"
         shadow="sm"
@@ -242,6 +240,5 @@ export function Calendar({ posts, onSelectSlot, onMovePost, localTimezone, targe
           })}
         </Grid>
       </Box>
-    </DndProvider>
   )
 }
