@@ -5,6 +5,7 @@ import { PostEditor } from '../../components/PostEditor'
 import { PreviewContainer } from '../../components/PreviewContainer'
 import { HashtagSuggestions } from '../../components/HashtagSuggestions'
 import { MentionSuggestions } from '../../components/MentionSuggestions'
+import { PlatformToggle } from '../../components/PlatformToggle'
 import { ScheduledPost } from '../../types/calendar'
 import { PlatformType } from '../../components/PostCreator'
 import { getUserTimezone } from '../../utils/timezone'
@@ -184,22 +185,14 @@ export default function ComposePage() {
               </CardHeader>
               <CardBody>
                 <VStack spacing={6} align="stretch">
-                  <FormControl>
+                  <Box>
                     <FormLabel>Select Platforms</FormLabel>
-                    <ButtonGroup spacing={3}>
-                      {Object.entries(PLATFORM_LIMITS).map(([platform, config]) => (
-                        <Button
-                          key={platform}
-                          onClick={() => handlePlatformToggle(platform as PlatformType)}
-                          variant={selectedPlatforms.includes(platform as PlatformType) ? 'solid' : 'outline'}
-                          leftIcon={<Icon as={config.icon} />}
-                          colorScheme={selectedPlatforms.includes(platform as PlatformType) ? 'brand' : 'gray'}
-                        >
-                          {platform}
-                        </Button>
-                      ))}
-                    </ButtonGroup>
-                  </FormControl>
+                    <PlatformToggle
+                      selectedPlatforms={selectedPlatforms}
+                      onTogglePlatform={handlePlatformToggle}
+                    />
+                  </Box>
+
 
                   <FormControl>
                     <FormLabel>
