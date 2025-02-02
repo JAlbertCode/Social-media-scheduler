@@ -10,7 +10,6 @@ import {
   ModalBody,
   ModalCloseButton,
   Button,
-  Textarea,
   Box,
   Text,
   VStack,
@@ -18,25 +17,22 @@ import {
   Input,
   useColorModeValue,
   Tag,
-  Grid,
-  Image,
-  IconButton,
+  useDisclosure,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
 } from '@chakra-ui/react'
+import { PostEditor } from './PostEditor'
+import { PlatformPreview } from './PlatformPreview'
+import { MediaUploader } from './MediaUploader'
+import { useA11y, useModalFocus } from '../hooks/useA11y'
+import { ErrorBoundary } from './ErrorBoundary'
+import { AutoSave } from './AutoSave'
 
-// Types
 export type PlatformType = 'Twitter' | 'LinkedIn' | 'Instagram' | 'TikTok' | 'YouTube' | 'Bluesky' | 'Threads'
-export type ContentType = 'feed' | 'story' | 'reels'
-
-// Platform character limits
-const PLATFORM_LIMITS: Record<PlatformType, number> = {
-  Twitter: 280,
-  Instagram: 2200,
-  TikTok: 2200,
-  LinkedIn: 3000,
-  YouTube: 1000,
-  Bluesky: 300,
-  Threads: 500,
-}
 
 interface MediaFile {
   file: File
@@ -60,18 +56,51 @@ interface PostCreatorProps {
   }) => void
 }
 
+const PreviewDrawerContent = ({ content, media, selectedPlatforms, hashtags, mentions }: {
+  content: string
+  media: MediaFile[]
+  selectedPlatforms: PlatformType[]
+  hashtags: string[]
+  mentions: string[]
+}) => {
+  return (
+    <Box p={4}>
+      {selectedPlatforms.map(platform => (
+        <Box key={platform} mb={6}>
+          <PlatformPreview
+            platform={platform}
+            content={content}
+            hashtags={hashtags}
+            mentions={mentions}
+            mediaFiles={media}
+          />
+        </Box>
+      ))}
+    </Box>
+  )
+}
+
 export function PostCreator({ isOpen, onClose, selectedPlatforms, initialScheduledTime, onPostCreate }: PostCreatorProps) {
+  // Component setup
+  const { useFocusReturn, announce } = useA11y()
+  useModalFocus(isOpen)
+  useFocusReturn(isOpen)
+
   const [content, setContent] = useState('')
   const [hashtags, setHashtags] = useState<string[]>([])
   const [mentions, setMentions] = useState<string[]>([])
   const [urls, setUrls] = useState<string[]>([])
   const [threads, setThreads] = useState<string[]>([])
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [scheduledTime, setScheduledTime] = useState<string>(
     initialScheduledTime ? initialScheduledTime.toISOString().slice(0, 16) : ''
   )
-  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const { 
+    isOpen: isPreviewOpen, 
+    onOpen: openPreview, 
+    onClose: closePreview 
+  } = useDisclosure()
 
   // Update scheduledTime when initialScheduledTime changes
   useEffect(() => {
@@ -86,6 +115,22 @@ export function PostCreator({ isOpen, onClose, selectedPlatforms, initialSchedul
       mediaFiles.forEach(file => URL.revokeObjectURL(file.preview))
     }
   }, [mediaFiles])
+
+  // Handle draft restore
+  const handleRestoreDraft = useCallback((draft: {
+    content: string
+    mediaFiles: MediaFile[]
+    platforms: string[]
+    scheduledTime?: string
+  }) => {
+    setContent(draft.content)
+    setMediaFiles(draft.mediaFiles)
+    if (draft.scheduledTime) {
+      setScheduledTime(draft.scheduledTime)
+    }
+    // Announce to screen readers
+    announce('Draft restored successfully', 'polite')
+  }, [announce])
 
   // Parse content for hashtags, mentions, and URLs
   const parseContent = useCallback((text: string) => {
@@ -105,18 +150,11 @@ export function PostCreator({ isOpen, onClose, selectedPlatforms, initialSchedul
   }, [parseContent])
 
   // Handle file selection
-  const handleFiles = useCallback((files: FileList) => {
-    Array.from(files).forEach(file => {
-      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
-        const preview = URL.createObjectURL(file)
-        setMediaFiles(prev => [...prev, {
-          file,
-          preview,
-          type: file.type.startsWith('image/') ? 'image' : 'video'
-        }])
-      }
-    })
-  }, [])
+  const handleFiles = useCallback((files: MediaFile[]) => {
+    setMediaFiles(prev => [...prev, ...files])
+    // Announce to screen readers
+    announce(`${files.length} media files added`, 'polite')
+  }, [announce])
 
   // Handle post creation
   const handleCreate = useCallback(() => {
@@ -142,182 +180,149 @@ export function PostCreator({ isOpen, onClose, selectedPlatforms, initialSchedul
     setThreads([])
     setMediaFiles([])
     setScheduledTime('')
-    setValidationErrors({})
     
     // Close modal
     onClose()
-  }, [content, hashtags, mentions, urls, threads, mediaFiles, scheduledTime, onPostCreate, onClose])
+
+    // Announce to screen readers
+    announce('Post created successfully', 'assertive')
+  }, [content, hashtags, mentions, urls, threads, mediaFiles, scheduledTime, onPostCreate, onClose, announce])
+
+  // Setup keyboard shortcuts
+  useEffect(() => {
+    const saveShortcut = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        handleCreate()
+      }
+    }
+
+    const previewShortcut = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault()
+        if (isPreviewOpen) {
+          closePreview()
+        } else {
+          openPreview()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', saveShortcut)
+    window.addEventListener('keydown', previewShortcut)
+
+    return () => {
+      window.removeEventListener('keydown', saveShortcut)
+      window.removeEventListener('keydown', previewShortcut)
+    }
+  }, [handleCreate, isPreviewOpen, closePreview, openPreview])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-      <ModalOverlay />
-      <ModalContent maxW="1000px">
-        <ModalHeader>Create Post</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <VStack spacing={6}>
-            {/* Platform Tags */}
-            <HStack spacing={2} alignSelf="flex-start">
-              {selectedPlatforms.map(platform => (
-                <Tag key={platform} colorScheme="blue" size="sm">
-                  {platform}
-                </Tag>
-              ))}
-            </HStack>
-
-            {/* Content Editor */}
-            <Box position="relative" w="full">
-              <Textarea
-                value={content}
-                onChange={(e) => handleContentChange(e.target.value)}
-                placeholder="Write your post content..."
-                size="lg"
-                minH="200px"
-                resize="vertical"
-              />
-              <VStack
-                position="absolute"
-                bottom={2}
-                right={2}
-                alignItems="flex-end"
-              >
-                {selectedPlatforms.map(platform => {
-                  const limit = PLATFORM_LIMITS[platform];
-                  const remaining = limit - content.length;
-                  return (
-                    <Text
-                      key={platform}
-                      fontSize="sm"
-                      color={
-                        remaining < 0 ? 'red.500' :
-                        remaining < limit * 0.1 ? 'yellow.500' :
-                        'gray.500'
-                      }
-                    >
-                      {platform}: {remaining}
-                    </Text>
-                  );
-                })}
-              </VStack>
-            </Box>
-
-            {/* Schedule Post */}
-            <Box w="full">
-              <Text mb={2} fontSize="sm" fontWeight="medium">Schedule Post</Text>
-              <Input
-                type="datetime-local"
-                value={scheduledTime}
-                onChange={(e) => setScheduledTime(e.target.value)}
-                min={new Date().toISOString().slice(0, 16)}
-              />
-            </Box>
-
-            {/* Media Upload */}
-            <Box
-              w="full"
-              borderWidth={2}
-              borderStyle="dashed"
-              rounded="lg"
-              p={4}
-              textAlign="center"
-              cursor="pointer"
-              onClick={() => fileInputRef.current?.click()}
-              _hover={{ borderColor: 'gray.400' }}
+    <ErrorBoundary>
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        size="2xl"
+        aria-label="Create new post"
+      >
+        <ModalOverlay />
+        <ModalContent maxW="1000px">
+          <ModalHeader borderBottomWidth="1px">
+            Create Post
+            <Button 
+              size="sm" 
+              ml={4} 
+              onClick={openPreview}
+              aria-label="Preview post"
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                hidden
-                accept="image/*,video/*"
-                onChange={(e) => e.target.files && handleFiles(e.target.files)}
-                multiple
-              />
-              <Text color="gray.600">Drop files or click to upload</Text>
-            </Box>
-
-            {/* Media Preview */}
-            {mediaFiles.length > 0 && (
-              <Grid
-                templateColumns="repeat(auto-fill, minmax(150px, 1fr))"
-                gap={4}
-                w="full"
-                maxH="300px"
-                overflowY="auto"
-              >
-                {mediaFiles.map((file, index) => (
-                  <Box key={index} position="relative" role="group">
-                    <Box
-                      w="150px"
-                      h="150px"
-                      overflow="hidden"
-                      rounded="lg"
-                      bg="gray.100"
-                    >
-                      {file.type === 'image' ? (
-                        <Image
-                          src={file.preview}
-                          alt={`Preview ${index + 1}`}
-                          objectFit="cover"
-                          w="150px"
-                          h="150px"
-                        />
-                      ) : (
-                        <video
-                          src={file.preview}
-                          style={{
-                            objectFit: 'cover',
-                            width: '150px',
-                            height: '150px'
-                          }}
-                          controls
-                        />
-                      )}
-                      <IconButton
-                        aria-label="Remove media"
-                        icon={<svg
-                          width="16"
-                          height="16"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>}
-                        position="absolute"
-                        top={2}
-                        right={2}
-                        size="sm"
-                        colorScheme="red"
-                        onClick={() => {
-                          URL.revokeObjectURL(file.preview)
-                          setMediaFiles(files => files.filter((_, i) => i !== index))
-                        }}
-                        opacity={0}
-                        _groupHover={{ opacity: 1 }}
-                      />
-                    </Box>
-                  </Box>
+              Preview
+            </Button>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={6} align="stretch">
+              {/* Platform Tags */}
+              <HStack spacing={2}>
+                {selectedPlatforms.map(platform => (
+                  <Tag key={platform} colorScheme="blue" size="sm">
+                    {platform}
+                  </Tag>
                 ))}
-              </Grid>
-            )}
-          </VStack>
-        </ModalBody>
+              </HStack>
 
-        <ModalFooter>
-          <Button
-            colorScheme="blue"
-            onClick={handleCreate}
-            isFullWidth
-          >
-            {scheduledTime ? 'Schedule Post' : 'Create Post'}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {/* Main Editor */}
+              <Box position="relative">
+                <PostEditor
+                  onSave={(newContent, media, platforms) => {
+                    handleContentChange(newContent)
+                    if (media.length > 0) {
+                      handleFiles(media)
+                    }
+                  }}
+                  initialContent={content}
+                  initialPlatforms={selectedPlatforms}
+                />
+                <AutoSave
+                  content={content}
+                  mediaFiles={mediaFiles}
+                  platforms={selectedPlatforms}
+                  scheduledTime={scheduledTime}
+                  onRestore={handleRestoreDraft}
+                />
+              </Box>
+
+              {/* Schedule Post */}
+              <Box>
+                <Text mb={2} fontSize="sm" fontWeight="medium">Schedule Post</Text>
+                <Input
+                  type="datetime-local"
+                  value={scheduledTime}
+                  onChange={(e) => setScheduledTime(e.target.value)}
+                  min={new Date().toISOString().slice(0, 16)}
+                  aria-label="Schedule time for post"
+                />
+              </Box>
+            </VStack>
+          </ModalBody>
+
+          <ModalFooter borderTopWidth="1px">
+            <Button
+              colorScheme="blue"
+              onClick={handleCreate}
+              isFullWidth
+              aria-label={scheduledTime ? 'Schedule post' : 'Create post'}
+            >
+              {scheduledTime ? 'Schedule Post' : 'Create Post'}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Preview Drawer */}
+      <Drawer
+        isOpen={isPreviewOpen}
+        placement="right"
+        onClose={closePreview}
+        size="md"
+      >
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader borderBottomWidth="1px">
+            Post Preview
+          </DrawerHeader>
+
+          <DrawerBody>
+            <PreviewDrawerContent
+              content={content}
+              media={mediaFiles}
+              selectedPlatforms={selectedPlatforms}
+              hashtags={hashtags}
+              mentions={mentions}
+            />
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    </ErrorBoundary>
   )
 }
