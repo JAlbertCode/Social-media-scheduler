@@ -181,31 +181,27 @@ export default function SchedulePage() {
                   <PlatformToggle
                     selectedPlatforms={selectedPlatforms}
                     onTogglePlatform={(platform) => {
-                      setSelectedPlatforms(prev =>
-                        prev.includes(platform)
+                      setSelectedPlatforms(prev => {
+                        const newPlatforms = prev.includes(platform)
                           ? prev.filter(p => p !== platform)
                           : [...prev, platform]
-                      )
+                        
+                        // Update activeFilter if we're removing its current platform
+                        if (prev.includes(platform) && platform === activeFilter) {
+                          setActiveFilter(newPlatforms[0] || 'Twitter')
+                        }
+                        // Or if this is the first platform being added
+                        else if (!prev.includes(platform) && prev.length === 0) {
+                          setActiveFilter(platform)
+                        }
+                        
+                        return newPlatforms
+                      })
                     }}
                   />
                 </Box>
 
-                {/* Platform Filter */}
-                <Box>
-                  <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={2}>
-                    Platform
-                  </Text>
-                  <Select
-                    value={activeFilter}
-                    onChange={(e) => setActiveFilter(e.target.value as PlatformType)}
-                    size="sm"
-                    width="200px"
-                  >
-                    {selectedPlatforms.map(platform => (
-                      <option key={platform} value={platform}>{platform}</option>
-                    ))}
-                  </Select>
-                </Box>
+
 
                 {/* Timezone Selector */}
                 <Box>
