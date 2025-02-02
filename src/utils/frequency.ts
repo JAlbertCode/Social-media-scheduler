@@ -43,6 +43,35 @@ const platformGuidelines: Record<PlatformType, PlatformRecommendation> = {
       { hour: 19, score: 0.8 }
     ],
     minimumGap: 6
+  },
+  TikTok: {
+    platform: 'TikTok',
+    optimalFrequency: 2,
+    bestTimes: [
+      { hour: 13, score: 0.9 },
+      { hour: 17, score: 0.85 },
+      { hour: 21, score: 0.8 }
+    ],
+    minimumGap: 4
+  },
+  YouTube: {
+    platform: 'YouTube',
+    optimalFrequency: 1,
+    bestTimes: [
+      { hour: 15, score: 0.9 },
+      { hour: 20, score: 0.85 }
+    ],
+    minimumGap: 24
+  },
+  Bluesky: {
+    platform: 'Bluesky',
+    optimalFrequency: 3,
+    bestTimes: [
+      { hour: 9, score: 0.9 },
+      { hour: 13, score: 0.85 },
+      { hour: 17, score: 0.8 }
+    ],
+    minimumGap: 3
   }
 } as const
 

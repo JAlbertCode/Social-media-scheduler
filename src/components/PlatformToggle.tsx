@@ -17,12 +17,12 @@ interface PlatformToggleProps {
 }
 
 const PLATFORM_CONFIG = {
-  Twitter: { icon: FaTwitter, color: 'twitter.500' },
-  LinkedIn: { icon: FaLinkedin, color: 'linkedin.500' },
-  Instagram: { icon: FaInstagram, color: 'pink.500' },
-  TikTok: { icon: FaTiktok, color: 'black' },
-  YouTube: { icon: FaYoutube, color: 'red.500' },
-  Bluesky: { icon: SiBluesky, color: 'blue.500' },
+  Twitter: { icon: FaTwitter, color: '#1DA1F2' },  // Twitter blue
+  LinkedIn: { icon: FaLinkedin, color: '#0A66C2' },  // LinkedIn blue
+  Instagram: { icon: FaInstagram, color: '#E4405F' },  // Instagram pink
+  TikTok: { icon: FaTiktok, color: '#000000' },  // TikTok black
+  YouTube: { icon: FaYoutube, color: '#FF0000' },  // YouTube red
+  Bluesky: { icon: SiBluesky, color: '#0560FF' },  // Bluesky blue
 }
 
 export function PlatformToggle({
@@ -40,11 +40,12 @@ export function PlatformToggle({
           >
             <IconButton
               aria-label={platform}
-              icon={<config.icon />}
+              icon={<config.icon style={{ fill: selectedPlatforms.includes(platform as PlatformType) ? 'white' : config.color }} />}
               size="md"
-              variant={selectedPlatforms.includes(platform as PlatformType) ? 'solid' : 'ghost'}
+              variant='outline'
               color={selectedPlatforms.includes(platform as PlatformType) ? 'white' : config.color}
-              bg={selectedPlatforms.includes(platform as PlatformType) ? config.color : 'transparent'}
+              bg={selectedPlatforms.includes(platform as PlatformType) ? config.color : 'white'}
+              borderColor={config.color}
               _hover={{
                 bg: selectedPlatforms.includes(platform as PlatformType) ? config.color : 'gray.100',
               }}
