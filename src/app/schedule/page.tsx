@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   VStack,
   Box,
@@ -25,7 +25,7 @@ import { CalendarManager } from '../../components/CalendarManager'
 import { ScheduledPost } from '../../types/calendar'
 import { CalendarConfig } from '../../types/calendars'
 import { getUserTimezone, fromUTC, toUTC } from '../../utils/timezone'
-import { PlatformType } from '../../components/PostCreator'
+import { PlatformType } from '../../types/platforms'
 import { PlatformToggle } from '../../components/PlatformToggle'
 import { SchedulerOnboarding } from '../../components/SchedulerOnboarding'
 import { ScheduleEmptyState } from '../../components/ScheduleEmptyState'
@@ -83,20 +83,18 @@ function ClientSideScheduler() {
   }, [])
   
   // Sample data - this would come from your backend
-  const [scheduledPosts] = useState<ScheduledPost[]>([
-    {
-      id: '1',
-      content: 'Sample scheduled post for Twitter',
-      platforms: ['Twitter'],
-      scheduledTime: new Date(Date.now() + 1000 * 60 * 60 * 2), // 2 hours from now
-    },
-    {
-      id: '2',
-      content: 'Sample LinkedIn & Twitter post',
-      platforms: ['LinkedIn', 'Twitter'],
-      scheduledTime: new Date(Date.now() + 1000 * 60 * 60 * 4), // 4 hours from now
-    }
-  ])
+  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([{
+    id: '1',
+    content: 'Sample scheduled post for Twitter',
+    platforms: ['Twitter'],
+    scheduledTime: new Date(Date.now() + 1000 * 60 * 60 * 2), // 2 hours from now
+  },
+  {
+    id: '2',
+    content: 'Sample LinkedIn & Twitter post',
+    platforms: ['LinkedIn', 'Twitter'],
+    scheduledTime: new Date(Date.now() + 1000 * 60 * 60 * 4), // 4 hours from now
+  }])
 
   const handleOpenCompose = (time?: Date) => {
     if (time) {
@@ -109,6 +107,25 @@ function ClientSideScheduler() {
     setScheduleTime(null)
     closeCompose()
   }
+
+  const handlePostCreate = useCallback((post: {
+    content: string
+    hashtags: string[]
+    mentions: string[]
+    urls: string[]
+    threads?: string[]
+    media?: File[]
+    scheduledTime?: Date
+  }) => {
+    const newPost: ScheduledPost = {
+      id: Math.random().toString(36).substring(7), // In real app, this would come from backend
+      content: post.content,
+      platforms: selectedPlatforms,
+      scheduledTime: post.scheduledTime || new Date(),
+    }
+    setScheduledPosts(prev => [...prev, newPost])
+    handleCloseCompose()
+  }, [selectedPlatforms])
 
   const handleToggleCalendar = (calendarId: string) => {
     setActiveCalendars(prev =>
@@ -160,7 +177,11 @@ function ClientSideScheduler() {
   }
 
   const handleMovePost = (postId: string, newDate: Date) => {
-    console.log('Moving post', postId, 'to', newDate)
+    setScheduledPosts(prev => prev.map(post => 
+      post.id === postId
+        ? { ...post, scheduledTime: newDate }
+        : post
+    ))
   }
 
   const getPostsInTimezone = (posts: ScheduledPost[]): ScheduledPost[] => {
@@ -366,6 +387,7 @@ function ClientSideScheduler() {
           onClose={handleCloseCompose}
           initialScheduledTime={scheduleTime}
           selectedPlatforms={selectedPlatforms}
+          onPostCreate={handlePostCreate}
         />
       </Box>
     </DndProvider>

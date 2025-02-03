@@ -21,16 +21,23 @@ interface DraggablePostProps {
 }
 
 export function DraggablePost({ post, allPosts }: DraggablePostProps) {
-  const [{ isDragging }, drag] = useDrag(() => ({
+  const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: 'POST',
-    item: {
+    item: () => ({
       type: 'POST',
       id: post.id,
       originalDate: post.scheduledTime
-    } as DragItem,
+    } as DragItem),
+    canDrag: (monitor) => true,
     collect: (monitor) => ({
       isDragging: monitor.isDragging()
-    })
+    }),
+    end: (item, monitor) => {
+      if (!monitor.didDrop()) {
+        // Handle case when post wasn't dropped on a valid target
+        console.log('Post was not dropped on a valid target')
+      }
+    }
   }))
 
   const bg = useColorModeValue('brand.50', 'brand.900')
@@ -40,23 +47,36 @@ export function DraggablePost({ post, allPosts }: DraggablePostProps) {
 
   const conflictResult = detectConflicts(post, allPosts)
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent calendar day's event from firing
+  }
+
   return (
     <PostPreviewPopover post={post}>
       <Box
-        ref={drag}
+        ref={preview}
         opacity={isDragging ? 0.5 : 1}
         bg={bg}
         color={textColor}
         p={1.5}
         rounded="md"
         fontSize="xs"
-        cursor="move"
         transition="all 0.2s"
         _hover={{ bg: useColorModeValue('brand.100', 'brand.800') }}
         borderWidth="1px"
         borderColor={useColorModeValue('brand.100', 'brand.700')}
         position="relative"
+        onMouseDown={handleMouseDown}
       >
+        <Box
+          ref={drag}
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          cursor="move"
+        />
         {conflictResult.hasConflict && conflictResult.type && (
           <ConflictIndicator
             type={conflictResult.type}

@@ -44,16 +44,22 @@ function CalendarDay({
   targetTimezones,
   businessEvents,
 }: CalendarDayProps) {
-  const [{ isOver }, drop] = useDrop(() => ({
+  const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: 'POST',
+    canDrop: (item: DragItem, monitor) => {
+      // Only allow drops directly on the day container
+      return monitor.isOver({ shallow: true })
+    },
     drop: (item: DragItem, monitor) => {
-      // Only handle the drop if it's directly on the day container
-      if (monitor.isOver({ shallow: true })) {
-        onDrop(item)
+      if (monitor.didDrop()) {
+        // Item was dropped on a child component
+        return
       }
+      onDrop(item)
     },
     collect: monitor => ({
-      isOver: monitor.isOver({ shallow: true })
+      isOver: monitor.isOver({ shallow: true }),
+      canDrop: monitor.canDrop()
     })
   }))
 
