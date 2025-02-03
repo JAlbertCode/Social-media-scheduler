@@ -7,23 +7,14 @@ import {
   Tooltip,
   Box,
 } from '@chakra-ui/react'
-import { FaTwitter, FaLinkedin, FaInstagram, FaTiktok, FaYoutube } from 'react-icons/fa'
-import { SiBluesky } from 'react-icons/si'
-import { PlatformType } from './PostCreator'
+import { PLATFORM_ICONS } from '../utils/platformIcons'
+import { PlatformType, PLATFORM_CONFIG } from '../types/platforms'
 
 interface PlatformToggleProps {
   selectedPlatforms: PlatformType[]
   onTogglePlatform: (platform: PlatformType) => void
 }
 
-const PLATFORM_CONFIG = {
-  Twitter: { icon: FaTwitter, color: '#1DA1F2' },  // Twitter blue
-  LinkedIn: { icon: FaLinkedin, color: '#0A66C2' },  // LinkedIn blue
-  Instagram: { icon: FaInstagram, color: '#E4405F' },  // Instagram pink
-  TikTok: { icon: FaTiktok, color: '#000000' },  // TikTok black
-  YouTube: { icon: FaYoutube, color: '#FF0000' },  // YouTube red
-  Bluesky: { icon: SiBluesky, color: '#0560FF' },  // Bluesky blue
-}
 
 export function PlatformToggle({
   selectedPlatforms,
@@ -40,7 +31,9 @@ export function PlatformToggle({
           >
             <IconButton
               aria-label={platform}
-              icon={<config.icon style={{ fill: selectedPlatforms.includes(platform as PlatformType) ? 'white' : config.color }} />}
+              icon={React.createElement(PLATFORM_ICONS[platform as PlatformType], {
+                style: { fill: selectedPlatforms.includes(platform as PlatformType) ? 'white' : config.color }
+              })}
               size="md"
               variant='outline'
               color={selectedPlatforms.includes(platform as PlatformType) ? 'white' : config.color}

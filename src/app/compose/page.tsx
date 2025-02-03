@@ -7,7 +7,7 @@ import { HashtagSuggestions } from '../../components/HashtagSuggestions'
 import { MentionSuggestions } from '../../components/MentionSuggestions'
 import { PlatformToggle } from '../../components/PlatformToggle'
 import { ScheduledPost } from '../../types/calendar'
-import { PlatformType } from '../../components/PostCreator'
+import { PlatformType, PLATFORM_LIMITS } from '../../types/platforms'
 import { getUserTimezone } from '../../utils/timezone'
 import { countMentions } from '../../utils/mentionSuggestions'
 import {
@@ -32,29 +32,9 @@ import {
   ButtonGroup,
   Icon,
 } from '@chakra-ui/react'
-import { 
-  FaTwitter, 
-  FaLinkedin, 
-  FaInstagram 
-} from 'react-icons/fa'
+import { PLATFORM_ICONS } from '../../utils/platformIcons'
 
-const PLATFORM_LIMITS = {
-  Twitter: {
-    characterLimit: 280,
-    mediaLimit: 4,
-    icon: FaTwitter,
-  },
-  LinkedIn: {
-    characterLimit: 3000,
-    mediaLimit: 9,
-    icon: FaLinkedin,
-  },
-  Instagram: {
-    characterLimit: 2200,
-    mediaLimit: 10,
-    icon: FaInstagram,
-  }
-}
+
 
 export default function ComposePage() {
   const [content, setContent] = useState('')
@@ -233,7 +213,7 @@ export default function ComposePage() {
                     <Card key={platform} variant="outline">
                       <CardBody>
                         <HStack mb={3}>
-                          <Icon as={PLATFORM_LIMITS[platform].icon} />
+                          <Icon as={PLATFORM_ICONS[platform]} />
                           <Text fontWeight="medium">{platform} Hashtag Suggestions</Text>
                         </HStack>
                         <HashtagSuggestions

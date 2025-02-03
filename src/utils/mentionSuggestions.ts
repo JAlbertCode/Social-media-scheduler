@@ -1,4 +1,6 @@
-import { PlatformType } from '../components/PostCreator'
+'use client'
+
+import { PlatformType } from '../types/platforms'
 
 // This would typically come from your API/backend
 interface UserSuggestion {
@@ -36,11 +38,42 @@ const MOCK_USERS: UserSuggestion[] = [
     username: 'social.media.expert',
     displayName: 'Social Media Expert',
     platform: 'Instagram'
+  },
+  {
+    id: '5',
+    username: 'tiktok.creator',
+    displayName: 'TikTok Creator',
+    platform: 'TikTok',
+    verified: true
+  },
+  {
+    id: '6',
+    username: 'youtube.channel',
+    displayName: 'YouTube Channel',
+    platform: 'YouTube',
+    verified: true
+  },
+  {
+    id: '7',
+    username: 'bluesky.pioneer',
+    displayName: 'Bluesky Pioneer',
+    platform: 'Bluesky'
+  },
+  {
+    id: '8',
+    username: 'threads.connector',
+    displayName: 'Threads Connector',
+    platform: 'Threads'
   }
 ]
 
 // Platform-specific mention rules
-const PLATFORM_MENTION_RULES = {
+const PLATFORM_MENTION_RULES: Record<PlatformType, {
+  prefix: string;
+  maxLength: number;
+  validCharacters: RegExp;
+  maxMentions: number;
+}> = {
   Twitter: {
     prefix: '@',
     maxLength: 15,
@@ -58,8 +91,32 @@ const PLATFORM_MENTION_RULES = {
     maxLength: 30,
     validCharacters: /^[A-Za-z0-9._]+$/,
     maxMentions: 20
+  },
+  TikTok: {
+    prefix: '@',
+    maxLength: 24,
+    validCharacters: /^[A-Za-z0-9._]+$/,
+    maxMentions: 5
+  },
+  YouTube: {
+    prefix: '@',
+    maxLength: 30,
+    validCharacters: /^[A-Za-z0-9._-]+$/,
+    maxMentions: 5
+  },
+  Bluesky: {
+    prefix: '@',
+    maxLength: 30,
+    validCharacters: /^[A-Za-z0-9._-]+$/,
+    maxMentions: 10
+  },
+  Threads: {
+    prefix: '@',
+    maxLength: 30,
+    validCharacters: /^[A-Za-z0-9._]+$/,
+    maxMentions: 10
   }
-} as const
+}
 
 // Function to get mention suggestions based on input
 export async function getMentionSuggestions(

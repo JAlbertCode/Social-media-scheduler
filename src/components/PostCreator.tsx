@@ -13,6 +13,7 @@ import {
   Box,
   Text,
   VStack,
+  HStack,
   Input,
   useColorModeValue,
   Drawer,
@@ -40,8 +41,8 @@ import { useA11y, useModalFocus } from '../hooks/useA11y'
 import { ErrorBoundary } from './ErrorBoundary'
 import { AutoSave } from './AutoSave'
 import { countMentions } from '../utils/mentionSuggestions'
-
-export type PlatformType = 'Twitter' | 'LinkedIn' | 'Instagram' | 'TikTok' | 'YouTube' | 'Bluesky' | 'Threads'
+import { PlatformType, PLATFORM_LIMITS } from '../types/platforms'
+import { validateContent } from '../utils/validation'
 
 interface MediaFile {
   file: File
@@ -65,38 +66,13 @@ interface PostCreatorProps {
   }) => void
 }
 
-const PLATFORM_LIMITS = {
-  Twitter: {
-    characterLimit: 280,
-    mediaLimit: 4,
-  },
-  LinkedIn: {
-    characterLimit: 3000,
-    mediaLimit: 9,
-  },
-  Instagram: {
-    characterLimit: 2200,
-    mediaLimit: 10,
-  },
-  TikTok: {
-    characterLimit: 2200,
-    mediaLimit: 1,
-  },
-  YouTube: {
-    characterLimit: 1000,
-    mediaLimit: 1,
-  },
-  Bluesky: {
-    characterLimit: 300,
-    mediaLimit: 4,
-  },
-  Threads: {
-    characterLimit: 500,
-    mediaLimit: 10,
-  }
-}
-
-export function PostCreator({ isOpen, onClose, selectedPlatforms: initialPlatforms, initialScheduledTime, onPostCreate }: PostCreatorProps) {
+export function PostCreator({ 
+  isOpen, 
+  onClose, 
+  selectedPlatforms: initialPlatforms, 
+  initialScheduledTime, 
+  onPostCreate 
+}: PostCreatorProps) {
   const { useFocusReturn, announce } = useA11y()
   useModalFocus(isOpen)
   useFocusReturn(isOpen)
@@ -121,25 +97,6 @@ export function PostCreator({ isOpen, onClose, selectedPlatforms: initialPlatfor
     onClose: closePreview 
   } = useDisclosure()
 
-  const validateContent = useCallback((text: string, platforms: PlatformType[]): string | null => {
-    for (const platform of platforms) {
-      const limit = PLATFORM_LIMITS[platform].characterLimit
-      if (text.length > limit) {
-        return `Content exceeds ${platform} limit of ${limit} characters`
-      }
-      
-      if (mediaFiles.length > PLATFORM_LIMITS[platform].mediaLimit) {
-        return `Too many media items for ${platform}. Maximum is ${PLATFORM_LIMITS[platform].mediaLimit}`
-      }
-
-      const mentionsCount = countMentions(text, platform)
-      if (!mentionsCount.valid) {
-        return mentionsCount.message
-      }
-    }
-    return null
-  }, [mediaFiles.length])
-
   useEffect(() => {
     if (initialScheduledTime) {
       setScheduledTime(initialScheduledTime.toISOString().slice(0, 16))
@@ -152,23 +109,15 @@ export function PostCreator({ isOpen, onClose, selectedPlatforms: initialPlatfor
     }
   }, [mediaFiles])
 
-  const handleRestoreDraft = useCallback((draft: {
-    content: string
-    mediaFiles: MediaFile[]
-    platforms: string[]
-    scheduledTime?: string
-  }) => {
-    setContent(draft.content)
-    setMediaFiles(draft.mediaFiles)
-    if (draft.scheduledTime) {
-      setScheduledTime(draft.scheduledTime)
-    }
-    announce('Draft restored successfully', 'polite')
-  }, [announce])
+  const validateInput = useCallback(() => {
+    const validationError = validateContent(content, selectedPlatforms, mediaFiles)
+    setError(validationError)
+    return !validationError
+  }, [content, selectedPlatforms, mediaFiles])
 
   const handleContentChange = useCallback((text: string) => {
     setContent(text)
-    const validationError = validateContent(text, selectedPlatforms)
+    const validationError = validateContent(text, selectedPlatforms, mediaFiles)
     setError(validationError)
 
     if (textareaRef.current) {
@@ -182,19 +131,7 @@ export function PostCreator({ isOpen, onClose, selectedPlatforms: initialPlatfor
         left: rect.left + (lines[lines.length - 1].length * 8)
       })
     }
-  }, [selectedPlatforms, validateContent])
-
-  const handlePlatformToggle = useCallback((platform: PlatformType) => {
-    setSelectedPlatforms(current => {
-      const newPlatforms = current.includes(platform)
-        ? current.filter(p => p !== platform)
-        : [...current, platform]
-      
-      const validationError = validateContent(content, newPlatforms)
-      setError(validationError)
-      return newPlatforms
-    })
-  }, [content, validateContent])
+  }, [selectedPlatforms, mediaFiles])
 
   const handleFiles = useCallback((files: MediaFile[]) => {
     setMediaFiles(prev => [...prev, ...files])
@@ -218,11 +155,35 @@ export function PostCreator({ isOpen, onClose, selectedPlatforms: initialPlatfor
     setCursorPosition(null)
   }, [content, handleContentChange])
 
-  const handleCreate = useCallback(() => {
-    const validationError = validateContent(content, selectedPlatforms)
-    if (validationError) {
+  const handlePlatformToggle = useCallback((platform: PlatformType) => {
+    setSelectedPlatforms(current => {
+      const newPlatforms = current.includes(platform)
+        ? current.filter(p => p !== platform)
+        : [...current, platform]
+      
+      const validationError = validateContent(content, newPlatforms, mediaFiles)
       setError(validationError)
-      announce(validationError, 'assertive')
+      return newPlatforms
+    })
+  }, [content, mediaFiles])
+
+  const handleRestoreDraft = useCallback((draft: {
+    content: string
+    mediaFiles: MediaFile[]
+    platforms: string[]
+    scheduledTime?: string
+  }) => {
+    setContent(draft.content)
+    setMediaFiles(draft.mediaFiles)
+    if (draft.scheduledTime) {
+      setScheduledTime(draft.scheduledTime)
+    }
+    announce('Draft restored successfully', 'polite')
+  }, [announce])
+
+  const handleCreate = useCallback(() => {
+    if (!validateInput()) {
+      announce(error || 'Validation failed', 'assertive')
       return
     }
     
@@ -247,7 +208,7 @@ export function PostCreator({ isOpen, onClose, selectedPlatforms: initialPlatfor
     setScheduledTime('')
     onClose()
     announce('Post created successfully', 'assertive')
-  }, [content, hashtags, mentions, urls, threads, mediaFiles, scheduledTime, selectedPlatforms, validateContent, onPostCreate, onClose, announce])
+  }, [content, hashtags, mentions, urls, threads, mediaFiles, scheduledTime, error, validateInput, onPostCreate, onClose, announce])
 
   useEffect(() => {
     const handleShortcuts = (e: KeyboardEvent) => {

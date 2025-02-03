@@ -1,4 +1,6 @@
-import { PlatformType } from '../components/PostCreator'
+'use client'
+
+import { PlatformType } from '../types/platforms'
 
 // Common hashtag categories
 const HASHTAG_CATEGORIES = {
@@ -31,23 +33,47 @@ const HASHTAG_CATEGORIES = {
 } as const
 
 // Platform-specific hashtag rules
-const PLATFORM_HASHTAG_RULES = {
+const PLATFORM_HASHTAG_RULES: Record<PlatformType, {
+  maxHashtags: number;
+  recommendedPosition: 'inline' | 'end' | 'comment';
+  caseStyle: 'camelCase' | 'lowercase';
+}> = {
   Twitter: {
     maxHashtags: 3,
-    recommendedPosition: 'end', // 'inline' | 'end'
-    caseStyle: 'camelCase', // 'camelCase' | 'lowercase'
+    recommendedPosition: 'end',
+    caseStyle: 'camelCase',
   },
   Instagram: {
     maxHashtags: 30,
-    recommendedPosition: 'comment', // 'inline' | 'end' | 'comment'
+    recommendedPosition: 'comment',
     caseStyle: 'lowercase',
   },
   LinkedIn: {
     maxHashtags: 5,
     recommendedPosition: 'end',
     caseStyle: 'camelCase',
+  },
+  TikTok: {
+    maxHashtags: 8,
+    recommendedPosition: 'end',
+    caseStyle: 'lowercase',
+  },
+  YouTube: {
+    maxHashtags: 15,
+    recommendedPosition: 'end',
+    caseStyle: 'lowercase',
+  },
+  Bluesky: {
+    maxHashtags: 5,
+    recommendedPosition: 'end',
+    caseStyle: 'camelCase',
+  },
+  Threads: {
+    maxHashtags: 10,
+    recommendedPosition: 'end',
+    caseStyle: 'lowercase',
   }
-} as const
+}
 
 // Function to analyze content and suggest relevant hashtags
 export function analyzeContentForHashtags(
@@ -115,17 +141,21 @@ export function getRecommendedHashtagPosition(
 // Function to suggest trending hashtags by platform
 export function getTrendingHashtags(platform: PlatformType): string[] {
   // This would typically fetch from an API
-  // For now, return some static suggestions
+  // For now, return some static suggestions based on platform
   const commonTrending = [
     '#trending',
     '#viral',
     '#featured'
   ]
 
-  const platformTrending = {
+  const platformTrending: Record<PlatformType, string[]> = {
     Twitter: ['#twitterhacks', '#twittermarketing'],
     Instagram: ['#instadaily', '#instagood'],
-    LinkedIn: ['#careertips', '#networking']
+    LinkedIn: ['#careertips', '#networking'],
+    TikTok: ['#fyp', '#trending', '#viral'],
+    YouTube: ['#shorts', '#youtubetips', '#subscribe'],
+    Bluesky: ['#bluesky', '#tech', '#social'],
+    Threads: ['#threads', '#connect', '#community']
   }
 
   return [...commonTrending, ...(platformTrending[platform] || [])]

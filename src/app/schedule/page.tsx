@@ -361,14 +361,12 @@ function ClientSideScheduler() {
         </Box>
 
         {/* Post Creator Dialog */}
-        {isComposeOpen && (
-          <PostCreator
-            isOpen={isComposeOpen}
-            onClose={handleCloseCompose}
-            initialScheduledTime={scheduleTime}
-            selectedPlatforms={selectedPlatforms}
-          />
-        )}
+        <PostCreator
+          isOpen={isComposeOpen}
+          onClose={handleCloseCompose}
+          initialScheduledTime={scheduleTime}
+          selectedPlatforms={selectedPlatforms}
+        />
       </Box>
     </DndProvider>
   )
