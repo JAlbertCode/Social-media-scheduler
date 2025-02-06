@@ -14,7 +14,7 @@ import {
   Image,
   Icon,
 } from '@chakra-ui/react'
-import { FaTwitter, FaLinkedin, FaInstagram } from 'react-icons/fa'
+import { FaTwitter, FaLinkedin, FaInstagram, FaFire } from 'react-icons/fa'
 import { SiBluesky } from 'react-icons/si'
 import { ScheduledPost } from '../types/calendar'
 import { format } from 'date-fns'
@@ -24,6 +24,7 @@ const platformIcons = {
   LinkedIn: FaLinkedin,
   Instagram: FaInstagram,
   Bluesky: SiBluesky,
+  Warpcast: FaFire,
 }
 
 const platformColors = {
@@ -31,6 +32,7 @@ const platformColors = {
   LinkedIn: 'linkedin.500',
   Instagram: 'pink.500',
   Bluesky: 'blue.500',
+  Warpcast: 'orange.500',
 }
 
 interface PostPreviewPopoverProps {

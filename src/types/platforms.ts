@@ -1,4 +1,4 @@
-export type PlatformType = 'Twitter' | 'LinkedIn' | 'Instagram' | 'TikTok' | 'YouTube' | 'Bluesky' | 'Threads'
+export type PlatformType = 'Twitter' | 'LinkedIn' | 'Instagram' | 'TikTok' | 'YouTube' | 'Bluesky' | 'Threads' | 'Warpcast'
 
 export const PLATFORM_LIMITS: Record<PlatformType, { characterLimit: number; mediaLimit: number }> = {
   Twitter: {
@@ -28,6 +28,10 @@ export const PLATFORM_LIMITS: Record<PlatformType, { characterLimit: number; med
   Threads: {
     characterLimit: 500,
     mediaLimit: 10,
+  },
+  Warpcast: {
+    characterLimit: 320,
+    mediaLimit: 4,
   }
 }
 
@@ -59,5 +63,9 @@ export const PLATFORM_CONFIG = {
   Threads: {
     icon: 'FaThreads',
     color: '#000000',  // Threads black
+  },
+  Warpcast: {
+    icon: 'FaFire',
+    color: '#FF4500',  // Orange
   }
 } as const

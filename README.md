@@ -45,7 +45,7 @@ A comprehensive social media scheduling platform that allows seamless content ma
   - [x] TikTok
   - [x] Instagram
   - [x] Twitter
-  - [ ] Warpcast
+  - [x] Warpcast
   - [x] YouTube
   - [x] LinkedIn
   - [x] Threads

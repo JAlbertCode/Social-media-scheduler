@@ -72,6 +72,11 @@ const PLATFORM_HASHTAG_RULES: Record<PlatformType, {
     maxHashtags: 10,
     recommendedPosition: 'end',
     caseStyle: 'lowercase',
+  },
+  Warpcast: {
+    maxHashtags: 5,
+    recommendedPosition: 'end',
+    caseStyle: 'camelCase',
   }
 }
 
@@ -155,7 +160,8 @@ export function getTrendingHashtags(platform: PlatformType): string[] {
     TikTok: ['#fyp', '#trending', '#viral'],
     YouTube: ['#shorts', '#youtubetips', '#subscribe'],
     Bluesky: ['#bluesky', '#tech', '#social'],
-    Threads: ['#threads', '#connect', '#community']
+    Threads: ['#threads', '#connect', '#community'],
+    Warpcast: ['#warpcast', '#farcaster', '#web3']
   }
 
   return [...commonTrending, ...(platformTrending[platform] || [])]

@@ -73,35 +73,50 @@ export function DraggablePost({ post, allPosts }: DraggablePostProps) {
         }}
         onMouseDown={handleMouseDown}
       >
+      {/* Post Content */}
+
         {conflictResult.hasConflict && conflictResult.type && (
           <ConflictIndicator
             type={conflictResult.type}
             conflicts={conflictResult.conflicts || []}
           />
         )}
-        <HStack justify="space-between" mb={1}>
-          <Text noOfLines={1} flex={1}>
-            {post.content}
-          </Text>
+
+        {/* Time and Platform Icons */}
+        <HStack mb={1} justify="space-between" align="center">
+          <HStack spacing={1}>
+            {post.platforms.map(platform => (
+              <Tag
+                key={platform}
+                size="sm"
+                bg={tagBg}
+                color={textColor}
+                px={1}
+                minH="16px"
+                fontSize="10px"
+              >
+                {platform.slice(0, 2)}
+              </Tag>
+            ))}
+          </HStack>
           <Text fontSize="10px" color={useColorModeValue('brand.600', 'brand.200')}>
             {time}
           </Text>
         </HStack>
-        <HStack spacing={1}>
-          {post.platforms.map(platform => (
-            <Tag
-              key={platform}
-              size="sm"
-              bg={tagBg}
-              color={textColor}
-              fontSize="10px"
-              minH="16px"
-              px={1}
-            >
-              {platform}
-            </Tag>
-          ))}
-        </HStack>
+
+        {/* Post Content */}
+        <Text noOfLines={2} fontSize="xs">
+          {post.content}
+        </Text>
+
+        {/* Media Indicators */}
+        {post.media && post.media.length > 0 && (
+          <HStack spacing={1} mt={1}>
+            <Text fontSize="10px" color={useColorModeValue('gray.600', 'gray.400')}>
+              {post.media.length} media
+            </Text>
+          </HStack>
+        )}
       </Box>
     </PostPreviewPopover>
   )

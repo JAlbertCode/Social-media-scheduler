@@ -15,8 +15,12 @@ import {
 import { 
   FaTwitter, 
   FaLinkedin, 
-  FaInstagram 
+  FaInstagram,
+  FaTiktok,
+  FaYoutube
 } from 'react-icons/fa'
+import { PiWaveformBold } from 'react-icons/pi'
+import { SiBluesky } from 'react-icons/si'
 
 const PLATFORM_CONFIG = {
   Twitter: {
@@ -38,6 +42,41 @@ const PLATFORM_CONFIG = {
     bgColor: 'white',
     textColor: 'gray.900',
     iconColor: 'gray.600',
+    borderColor: 'gray.200'
+  },
+  TikTok: {
+    icon: FaTiktok,
+    bgColor: 'black',
+    textColor: 'white',
+    iconColor: 'whiteAlpha.800',
+    borderColor: 'whiteAlpha.200'
+  },
+  YouTube: {
+    icon: FaYoutube,
+    bgColor: 'white',
+    textColor: 'gray.900',
+    iconColor: 'red.500',
+    borderColor: 'gray.200'
+  },
+  Bluesky: {
+    icon: SiBluesky,
+    bgColor: 'white',
+    textColor: 'gray.900',
+    iconColor: 'blue.500',
+    borderColor: 'gray.200'
+  },
+  Threads: {
+    icon: FaTwitter, // Placeholder
+    bgColor: 'black',
+    textColor: 'white',
+    iconColor: 'whiteAlpha.800',
+    borderColor: 'whiteAlpha.200'
+  },
+  Warpcast: {
+    icon: PiWaveformBold,
+    bgColor: 'white',
+    textColor: 'gray.900',
+    iconColor: 'purple.500',
     borderColor: 'gray.200'
   }
 }

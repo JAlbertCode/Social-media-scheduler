@@ -64,6 +64,13 @@ const MOCK_USERS: UserSuggestion[] = [
     username: 'threads.connector',
     displayName: 'Threads Connector',
     platform: 'Threads'
+  },
+  {
+    id: '9',
+    username: 'warpcast.dev',
+    displayName: 'Warpcast Developer',
+    platform: 'Warpcast',
+    verified: true
   }
 ]
 
@@ -115,6 +122,12 @@ const PLATFORM_MENTION_RULES: Record<PlatformType, {
     maxLength: 30,
     validCharacters: /^[A-Za-z0-9._]+$/,
     maxMentions: 10
+  },
+  Warpcast: {
+    prefix: '@',
+    maxLength: 30,
+    validCharacters: /^[A-Za-z0-9._-]+$/,
+    maxMentions: 20
   }
 }
 
