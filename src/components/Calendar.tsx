@@ -47,12 +47,10 @@ function CalendarDay({
   const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: 'POST',
     canDrop: (item: DragItem, monitor) => {
-      // Only allow drops directly on the day container
       return monitor.isOver({ shallow: true })
     },
     drop: (item: DragItem, monitor) => {
       if (monitor.didDrop()) {
-        // Item was dropped on a child component
         return
       }
       onDrop(item)
@@ -72,52 +70,84 @@ function CalendarDay({
 
   return (
     <Box
-    ref={drop}
-    onClick={(e) => {
-      // Only trigger click if not dragging
-          if (!isOver) {
-            onClick()
-          }
-        }}
-        bg={
+      borderWidth="1px"
+      borderColor={borderColor}
+      bg={
         !isCurrentMonth ? inactiveBg :
         isToday ? todayBg :
         isOver ? dropBg :
         bgColor
       }
-      borderWidth="1px"
-      borderColor={borderColor}
-      minH="120px"
-      p={2}
-      cursor={isCurrentMonth ? 'pointer' : 'default'}
+      h="120px"
+      maxH="120px"
+      position="relative"
       transition="all 0.2s"
       _hover={isCurrentMonth ? { bg: hoverBg } : {}}
-      role="group"
-      position="relative"
+      display="flex"
+      flexDirection="column"
+      overflow="hidden"
     >
-      {isCurrentMonth && businessEvents.length > 0 && (
-        <BusinessEventOverlay events={businessEvents} />
-      )}
-      <Text
-        fontSize="sm"
-        fontWeight={isToday ? 'bold' : 'medium'}
-        color={isToday ? 'brand.500' : isCurrentMonth ? 'inherit' : 'gray.400'}
-        mb={1}
-      >
-        {isCurrentMonth ? date.getDate() : ''}
-      </Text>
-      <VStack spacing={1} align="stretch">
-        {posts.map((post) => (
-          <Box
-          key={post.id}
-          onClick={(e) => {
-            e.stopPropagation() // Prevent day click when clicking post
+      <Box
+        ref={drop}
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        onClick={(e) => {
+          if (!isOver) {
+            onClick()
+          }
+        }}
+        cursor={isCurrentMonth ? 'pointer' : 'default'}
+      />
+
+      <Box p={2} flex="1" display="flex" flexDirection="column" overflow="hidden">
+        {isCurrentMonth && businessEvents.length > 0 && (
+          <BusinessEventOverlay events={businessEvents} />
+        )}
+
+        <Text
+          fontSize="sm"
+          fontWeight={isToday ? 'bold' : 'medium'}
+          color={isToday ? 'brand.500' : isCurrentMonth ? 'inherit' : 'gray.400'}
+          mb={1}
+          flexShrink={0}
+        >
+          {isCurrentMonth ? date.getDate() : ''}
+        </Text>
+
+        <VStack 
+          spacing={1} 
+          align="stretch"
+          flex="1"
+          overflow="auto"
+          minH={0}
+          css={{
+            '&::-webkit-scrollbar': {
+              width: '4px',
+            },
+            '&::-webkit-scrollbar-track': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'gray.200',
+              borderRadius: '24px',
+            },
           }}
         >
-          <DraggablePost post={post} allPosts={allPosts} />
-        </Box>
-        ))}
-      </VStack>
+          {posts.map((post) => (
+            <Box
+              key={post.id}
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+            >
+              <DraggablePost post={post} allPosts={allPosts} />
+            </Box>
+          ))}
+        </VStack>
+      </Box>
     </Box>
   )
 }
@@ -170,98 +200,110 @@ export function Calendar({ posts, onSelectSlot, onMovePost, localTimezone, targe
 
   return (
     <Box
-        bg={headerBg}
-        rounded="xl"
-        shadow="sm"
-        borderWidth="1px"
+      bg={headerBg}
+      rounded="xl"
+      shadow="sm"
+      borderWidth="1px"
+      borderColor={borderColor}
+      overflow="hidden"
+      h="calc(100vh - 200px)"
+      display="flex"
+      flexDirection="column"
+    >
+      <Box
+        px={6}
+        py={4}
+        borderBottomWidth="1px"
         borderColor={borderColor}
-        overflow="hidden"
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        flexShrink={0}
       >
-        <Box
-          px={6}
-          py={4}
-          borderBottomWidth="1px"
-          borderColor={borderColor}
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Heading size="md" color={useColorModeValue('gray.900', 'white')}>
-            {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-          </Heading>
-          <ButtonGroup size="sm" spacing={2}>
-            <IconButton
-              aria-label="Previous month"
-              icon={<FaChevronLeft size="12px" />}
-              onClick={() => changeMonth(-1)}
-              variant="ghost"
-            />
-            <IconButton
-              aria-label="Next month"
-              icon={<FaChevronRight size="12px" />}
-              onClick={() => changeMonth(1)}
-              variant="ghost"
-            />
-          </ButtonGroup>
-        </Box>
-
-        <Grid templateColumns="repeat(7, 1fr)">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <Box
-              key={day}
-              bg={weekdayBg}
-              py={2}
-              textAlign="center"
-            >
-              <Text
-                fontSize="sm"
-                fontWeight="medium"
-                color={useColorModeValue('gray.600', 'gray.400')}
-              >
-                {day}
-              </Text>
-            </Box>
-          ))}
-
-          {Array.from({ length: 42 }, (_, i) => {
-            const dayNumber = i - firstDay + 1
-            const isCurrentMonth = dayNumber > 0 && dayNumber <= days
-            const date = new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              dayNumber
-            )
-            const dayPosts = isCurrentMonth ? getPostsForDay(date) : []
-            
-            return (
-              <CalendarDay
-                key={i}
-                date={date}
-                posts={dayPosts}
-                isCurrentMonth={isCurrentMonth}
-                isToday={isToday(date)}
-                onDrop={(item) => {
-                  if (onMovePost && isCurrentMonth) {
-                    onMovePost(item.id, date)
-                  }
-                }}
-                onClick={() => {
-                  if (isCurrentMonth && onSelectSlot) {
-                    onSelectSlot(date)
-                  }
-                }}
-                allPosts={posts}
-                localTimezone={localTimezone}
-                targetTimezones={targetTimezones}
-                businessEvents={
-                  isCurrentMonth 
-                    ? getBusinessEvents(startOfDay(date), endOfDay(date)) 
-                    : []
-                }
-              />
-            )
-          })}
-        </Grid>
+        <Heading size="md" color={useColorModeValue('gray.900', 'white')}>
+          {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+        </Heading>
+        <ButtonGroup size="sm" spacing={2}>
+          <IconButton
+            aria-label="Previous month"
+            icon={<FaChevronLeft size="12px" />}
+            onClick={() => changeMonth(-1)}
+            variant="ghost"
+          />
+          <IconButton
+            aria-label="Next month"
+            icon={<FaChevronRight size="12px" />}
+            onClick={() => changeMonth(1)}
+            variant="ghost"
+          />
+        </ButtonGroup>
       </Box>
+
+      <Grid
+        templateRows="auto auto"
+        gridTemplateRows="auto 1fr"
+        templateColumns="repeat(7, 1fr)"
+        height="100%"
+        flex={1}
+      >
+        {/* Weekday Headers */}
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          <Box
+            key={day}
+            bg={weekdayBg}
+            py={2}
+            textAlign="center"
+          >
+            <Text
+              fontSize="sm"
+              fontWeight="medium"
+              color={useColorModeValue('gray.600', 'gray.400')}
+            >
+              {day}
+            </Text>
+          </Box>
+        ))}
+
+        {/* Calendar Days */}
+        {Array.from({ length: 42 }, (_, i) => {
+          const dayNumber = i - firstDay + 1
+          const isCurrentMonth = dayNumber > 0 && dayNumber <= days
+          const date = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            dayNumber
+          )
+          const dayPosts = isCurrentMonth ? getPostsForDay(date) : []
+          
+          return (
+            <CalendarDay
+              key={i}
+              date={date}
+              posts={dayPosts}
+              isCurrentMonth={isCurrentMonth}
+              isToday={isToday(date)}
+              onDrop={(item) => {
+                if (onMovePost && isCurrentMonth) {
+                  onMovePost(item.id, date)
+                }
+              }}
+              onClick={() => {
+                if (isCurrentMonth && onSelectSlot) {
+                  onSelectSlot(date)
+                }
+              }}
+              allPosts={posts}
+              localTimezone={localTimezone}
+              targetTimezones={targetTimezones}
+              businessEvents={
+                isCurrentMonth 
+                  ? getBusinessEvents(startOfDay(date), endOfDay(date)) 
+                  : []
+              }
+            />
+          )
+        })}
+      </Grid>
+    </Box>
   )
 }

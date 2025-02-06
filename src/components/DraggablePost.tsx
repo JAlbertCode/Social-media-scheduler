@@ -69,6 +69,7 @@ export function DraggablePost({ post, allPosts }: DraggablePostProps) {
         cursor="grab"
         style={{
           opacity: isDragging ? 0.4 : 1,
+          width: '100%',
         }}
         onMouseDown={handleMouseDown}
       >
