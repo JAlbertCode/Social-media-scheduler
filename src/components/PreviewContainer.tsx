@@ -19,7 +19,7 @@ import {
   FaTiktok,
   FaYoutube
 } from 'react-icons/fa'
-import { PiWaveformBold } from 'react-icons/pi'
+import { FarcasterIcon } from './icons/FarcasterIcon'
 import { SiBluesky } from 'react-icons/si'
 
 const PLATFORM_CONFIG = {
@@ -35,7 +35,7 @@ const PLATFORM_CONFIG = {
     bgColor: 'white',
     textColor: 'gray.900',
     iconColor: 'gray.600',
-    borderColor: 'gray.200'
+    borderColor: 'gray.200',
   },
   Instagram: {
     icon: FaInstagram,
@@ -73,11 +73,11 @@ const PLATFORM_CONFIG = {
     borderColor: 'whiteAlpha.200'
   },
   Warpcast: {
-    icon: PiWaveformBold,
+    icon: FarcasterIcon,
     bgColor: 'white',
     textColor: 'gray.900',
-    iconColor: 'purple.500',
-    borderColor: 'gray.200'
+    iconColor: '#4A148C',
+    borderColor: '#4A148C'
   }
 }
 

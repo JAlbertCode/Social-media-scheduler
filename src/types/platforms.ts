@@ -66,6 +66,6 @@ export const PLATFORM_CONFIG = {
   },
   Warpcast: {
     icon: 'FaFire',
-    color: '#FF4500',  // Orange
+    color: '#4A148C',  // Warpcast purple
   }
 } as const

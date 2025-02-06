@@ -31,9 +31,7 @@ export function PlatformToggle({
           >
             <IconButton
               aria-label={platform}
-              icon={React.createElement(PLATFORM_ICONS[platform as PlatformType], {
-                style: { fill: selectedPlatforms.includes(platform as PlatformType) ? 'white' : config.color }
-              })}
+              icon={React.createElement(PLATFORM_ICONS[platform as PlatformType])}
               size="md"
               variant='outline'
               color={selectedPlatforms.includes(platform as PlatformType) ? 'white' : config.color}
