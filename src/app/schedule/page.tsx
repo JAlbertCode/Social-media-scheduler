@@ -1,5 +1,6 @@
 'use client'
 
+import { CustomDragLayer } from '../../components/CustomDragLayer'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { useState, useEffect, useCallback } from 'react'
@@ -200,6 +201,7 @@ function ClientSideScheduler() {
   return (
     <DndProvider>
       <Box minH="calc(100vh - 64px)" bg="gray.50">
+        <CustomDragLayer />
         {/* Header Controls */}
         <Box bg="white" shadow="sm" borderBottomWidth="1px" borderColor="gray.200" mb={4}>
           <Box maxW="7xl" mx="auto" px={6} py={4}>

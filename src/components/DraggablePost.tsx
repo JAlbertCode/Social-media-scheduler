@@ -1,6 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useDrag } from 'react-dnd'
+import { getEmptyImage } from 'react-dnd-html5-backend'
 import { ScheduledPost, DragItem } from '../types/calendar'
 import {
   Box,
@@ -23,22 +25,21 @@ interface DraggablePostProps {
 export function DraggablePost({ post, allPosts }: DraggablePostProps) {
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: 'POST',
-    item: () => ({
+    item: {
       type: 'POST',
       id: post.id,
-      originalDate: post.scheduledTime
-    } as DragItem),
-    canDrag: (monitor) => true,
+      originalDate: post.scheduledTime,
+      content: post.content,
+      platforms: post.platforms
+    } as DragItem,
     collect: (monitor) => ({
       isDragging: monitor.isDragging()
     }),
-    end: (item, monitor) => {
-      if (!monitor.didDrop()) {
-        // Handle case when post wasn't dropped on a valid target
-        console.log('Post was not dropped on a valid target')
-      }
-    }
   }))
+
+  useEffect(() => {
+    preview(getEmptyImage())
+  }, [preview])
 
   const bg = useColorModeValue('brand.50', 'brand.900')
   const textColor = useColorModeValue('brand.700', 'brand.100')
@@ -54,8 +55,7 @@ export function DraggablePost({ post, allPosts }: DraggablePostProps) {
   return (
     <PostPreviewPopover post={post}>
       <Box
-        ref={preview}
-        opacity={isDragging ? 0.5 : 1}
+        ref={drag}
         bg={bg}
         color={textColor}
         p={1.5}
@@ -66,17 +66,12 @@ export function DraggablePost({ post, allPosts }: DraggablePostProps) {
         borderWidth="1px"
         borderColor={useColorModeValue('brand.100', 'brand.700')}
         position="relative"
+        cursor="grab"
+        style={{
+          opacity: isDragging ? 0.4 : 1,
+        }}
         onMouseDown={handleMouseDown}
       >
-        <Box
-          ref={drag}
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          cursor="move"
-        />
         {conflictResult.hasConflict && conflictResult.type && (
           <ConflictIndicator
             type={conflictResult.type}

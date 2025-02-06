@@ -1,16 +1,16 @@
-import { PlatformType } from '../components/PostCreator'
+import { PlatformType } from './platforms'
 
 export interface ScheduledPost {
   id: string
   content: string
   platforms: PlatformType[]
   scheduledTime: Date
-  timezone?: string
-  media?: { type: 'image' | 'video'; preview: string }[]
 }
 
 export interface DragItem {
-  type: 'POST'
+  type: string
   id: string
   originalDate: Date
+  content: string
+  platforms: PlatformType[]
 }
